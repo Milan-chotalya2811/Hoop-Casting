@@ -285,3 +285,55 @@
     width: 400px;
     max-width: 90%;
 }
+
+.menuBtn {
+    display: none;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 60;
+    background: #111827;
+    color: white;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+        /* Keep standard width or make slightly wider/narrower */
+        height: 100%;
+        top: 0;
+        bottom: 0;
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .mainContent {
+        margin-left: 0;
+        padding: 1rem;
+        padding-top: 60px;
+        /* Space for the top toggle button area */
+    }
+
+    .menuBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Optional: Overlay when sidebar is open */
+    .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+    }
+}

@@ -142,15 +142,7 @@ export default function Dashboard() {
                             </div>
                         ) : (
                             <div>
-                                <span style={{
-                                    background: 'rgba(239, 68, 68, 0.2)',
-                                    color: 'var(--error)',
-                                    padding: '4px 12px',
-                                    borderRadius: '12px',
-                                    fontSize: '0.8rem',
-                                    fontWeight: 'bold'
-                                }}>Incomplete</span>
-                                <p style={{ marginTop: '20px', color: 'var(--text-muted)' }}>
+                                <p style={{ color: 'var(--text-muted)' }}>
                                     You haven't created a talent profile yet. Create one to get discovered!
                                 </p>
                             </div>
@@ -159,7 +151,7 @@ export default function Dashboard() {
 
                     <Link href={talentProfile ? "/profile" : "/profile/edit"} className="btn btn-primary" style={{ marginTop: '20px', width: '100%' }}>
                         <Edit size={18} style={{ marginRight: '8px' }} />
-                        {talentProfile ? 'View Talent Profile' : 'Create Talent Profile'}
+                        {talentProfile ? 'View Talent Profile' : 'Edit Talent Profile'}
                     </Link>
                 </div>
 

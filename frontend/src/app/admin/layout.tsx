@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './admin.module.css'
 import AdminSidebar from '@/components/admin/Sidebar'
-import { ShieldAlert } from 'lucide-react'
+import { ShieldAlert, Menu, X } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, profile, loading } = useAuth()
     const router = useRouter()
     const [isAuthorized, setIsAuthorized] = useState(false)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
     useEffect(() => {
         if (!loading) {
@@ -51,7 +52,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     return (
         <div className={styles.adminParams}>
-            <AdminSidebar />
+            {/* Mobile Toggle Button */}
+            <button
+                className={styles.menuBtn}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                aria-label="Toggle Menu"
+            >
+                {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+
+            {/* Overlay for mobile when sidebar is open */}
+            {isSidebarOpen && (
+                <div
+                    className={styles.overlay}
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            <AdminSidebar
+                isOpen={isSidebarOpen}
+                onClose={() => setIsSidebarOpen(false)}
+            />
+
             <main className={styles.mainContent}>
                 {children}
             </main>

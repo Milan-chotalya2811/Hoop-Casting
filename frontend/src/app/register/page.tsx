@@ -51,9 +51,10 @@ export default function Register() {
 
             if (authData.user) {
                 // 2. Insert into public.users table
+                // Use upsert to handle cases where a database trigger creates the row first
                 const { error: dbError } = await supabase
                     .from('users')
-                    .insert({
+                    .upsert({
                         id: authData.user.id,
                         name: formData.fullName,
                         email: formData.email,
@@ -62,27 +63,8 @@ export default function Register() {
                     })
 
                 if (dbError) {
-                    // Check for duplicate key (maybe user exists in DB but not auth, or vice versa)
-                    if (!dbError.message.includes("duplicate key")) {
-                        console.error("Database error:", dbError)
-                        throw new Error("Account created but profile setup failed. Please contact support.")
-                    }
-                }
-
-                // CREATE EMPTY TALENT PROFILE SO EDIT FORM WORKS
-                const { error: profileError } = await supabase
-                    .from('talent_profiles')
-                    .insert({
-                        user_id: authData.user.id,
-                        category: '', // Empty initially
-                        created_at: new Date().toISOString()
-                    })
-
-                if (profileError) {
-                    // ignore if duplicate
-                    if (!profileError.message.includes("duplicate key")) {
-                        console.error("Profile creation error:", profileError)
-                    }
+                    console.error("Database error:", dbError)
+                    throw new Error("Account created but profile setup failed. Please contact support.")
                 }
 
                 // Success -> Redirect to Login

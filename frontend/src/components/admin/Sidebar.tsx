@@ -5,7 +5,12 @@ import styles from '@/app/admin/admin.module.css'
 import { LayoutDashboard, Users, FileText, Settings, LogOut, KeyRound, MessageSquare, Mail } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+    isOpen?: boolean
+    onClose?: () => void
+}
+
+export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
     const pathname = usePathname()
     const { signOut } = useAuth()
 
@@ -19,8 +24,12 @@ export default function AdminSidebar() {
         // { href: '/admin/settings', label: 'Settings', icon: Settings },
     ]
 
+    const handleLinkClick = () => {
+        if (onClose) onClose()
+    }
+
     return (
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
             <div className={styles.sidebarHeader}>
                 <LayoutDashboard size={28} />
                 <span>Admin Panel</span>
@@ -34,6 +43,7 @@ export default function AdminSidebar() {
                             key={link.href}
                             href={link.href}
                             className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
+                            onClick={handleLinkClick}
                         >
                             <link.icon size={20} />
                             {link.label}
@@ -44,7 +54,7 @@ export default function AdminSidebar() {
 
             <div style={{ padding: '1rem' }}>
                 <button
-                    onClick={signOut}
+                    onClick={() => { signOut(); handleLinkClick() }}
                     className={styles.navItem}
                     style={{ width: '100%', background: 'transparent', border: 'none', cursor: 'pointer' }}
                 >
