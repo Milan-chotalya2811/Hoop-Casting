@@ -62,17 +62,17 @@ export default function MyProfile() {
 
     return (
         <div className="container" style={{ paddingBottom: '80px' }}>
-            <div style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Link href="/dashboard" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <ArrowLeft size={16} /> Dashboard
+            <div className="action-bar">
+                <Link href="/dashboard" className="btn btn-outline dashboard-btn">
+                    <ArrowLeft size={16} /> <span className="btn-text">Dashboard</span>
                 </Link>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <Link href="/change-password" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <Shield size={16} /> Change Password
+                <div className="action-buttons">
+                    <Link href="/change-password" className="btn btn-outline action-btn">
+                        <Shield size={16} /> <span className="btn-text">Change Password</span>
                     </Link>
-                    <Link href="/profile/edit" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                        <Edit size={16} /> Edit Profile
+                    <Link href="/profile/edit" className="btn btn-primary action-btn">
+                        <Edit size={16} /> <span className="btn-text">Edit Profile</span>
                     </Link>
                 </div>
             </div>
@@ -277,6 +277,51 @@ export default function MyProfile() {
                 .link-primary {
                     color: var(--primary);
                     text-decoration: underline;
+                }
+
+                /* Action Bar Styles */
+                .action-bar {
+                    margin-top: 20px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .dashboard-btn, .action-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .action-buttons {
+                    display: flex;
+                    gap: 10px;
+                }
+
+                @media (max-width: 768px) {
+                    .action-bar {
+                        display: block; /* Stack vertically, but we will control internal flow */
+                    }
+                    .dashboard-btn {
+                        width: 100%;
+                        margin-bottom: 12px;
+                        justify-content: center;
+                    }
+                    .action-buttons {
+                        display: flex; /* keep flex for row */
+                        width: 100%;
+                        justify-content: space-between;
+                        gap: 10px;
+                    }
+                    .action-btn {
+                        width: 48%; /* Slightly less than 50% to account for gap */
+                        justify-content: center;
+                        padding: 10px 10px !important;
+                        font-size: 0.85rem !important;
+                        white-space: nowrap;
+                    }
+                    .btn-text {
+                        
+                    }
                 }
             `}</style>
         </div>
