@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css' // Reusing some card styles
-import { UserCircle, Edit, Shield } from 'lucide-react'
+import { UserCircle, Edit, Shield, Lock } from 'lucide-react'
 
 export default function Dashboard() {
     const { user, profile, loading } = useAuth()
@@ -93,10 +93,15 @@ export default function Dashboard() {
                         <p className={styles.label}>Email</p>
                         <p>{user.email}</p>
                     </div>
+                    {/* Mobile Field */}
                     <div>
                         <p className={styles.label}>Mobile</p>
                         <p>{profile?.mobile}</p>
                     </div>
+
+                    <Link href="/change-password" className="btn btn-outline" style={{ marginTop: '20px', width: '100%' }}>
+                        <Lock size={18} style={{ marginRight: '8px' }} /> Change Password
+                    </Link>
 
                     {['admin', 'super_admin'].includes(profile?.role) && (
                         <Link href="/admin" className="btn btn-outline" style={{ marginTop: '20px', width: '100%' }}>
