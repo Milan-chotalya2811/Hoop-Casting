@@ -67,9 +67,14 @@ export default function MyProfile() {
                     <ArrowLeft size={16} /> Dashboard
                 </Link>
 
-                <Link href="/profile/edit" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <Edit size={16} /> Edit Profile
-                </Link>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <Link href="/change-password" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <Shield size={16} /> Change Password
+                    </Link>
+                    <Link href="/profile/edit" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <Edit size={16} /> Edit Profile
+                    </Link>
+                </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
