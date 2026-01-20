@@ -8,7 +8,7 @@ import styles from './Header.module.css'
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, UserCircle, Laptop } from 'lucide-react'
 
 const Header = () => {
-    const { user, profile, signOut } = useAuth()
+    const { user, profile, talentProfile, signOut } = useAuth()
     const pathname = usePathname()
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -49,7 +49,15 @@ const Header = () => {
                                 style={{ position: 'relative' }}
                             >
                                 <div className={styles.avatar}>
-                                    <UserCircle size={28} />
+                                    {talentProfile?.profile_photo_url ? (
+                                        <img
+                                            src={talentProfile.profile_photo_url}
+                                            alt="User"
+                                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <UserCircle size={28} />
+                                    )}
                                 </div>
 
                                 {/* Dropdown - Toggle via State */}

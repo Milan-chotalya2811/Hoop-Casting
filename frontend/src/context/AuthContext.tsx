@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 interface AuthContextType {
     user: User | null
     profile: any | null
+    talentProfile: any | null
     loading: boolean
     signOut: () => Promise<void>
 }
@@ -15,6 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     user: null,
     profile: null,
+    talentProfile: null,
     loading: true,
     signOut: async () => { },
 })
@@ -22,6 +24,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null)
     const [profile, setProfile] = useState<any | null>(null)
+    const [talentProfile, setTalentProfile] = useState<any | null>(null)
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
@@ -40,10 +43,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     } else {
                         setUser(null)
                         setProfile(null)
+                        setTalentProfile(null)
                         setLoading(false)
                     }
                 }
 
+                // 2. Listen for changes
                 // 2. Listen for changes
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
                     console.log('Auth State Change:', event)
@@ -53,6 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     if (event === 'SIGNED_OUT') {
                         setUser(null)
                         setProfile(null)
+                        setTalentProfile(null)
                         setLoading(false)
                         router.push('/login')
                     } else if (session?.user) {
@@ -63,7 +69,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             await fetchProfile(session.user.id)
                         }
                     }
-                    // Note: session can be null on TOKEN_REFRESHED error etc, but usually SIGNED_OUT handles explicit logout
                 })
 
                 return () => {
@@ -81,15 +86,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchProfile = async (userId: string) => {
         try {
-            const { data, error } = await supabase
+            // Fetch User Profile
+            const { data: userData, error: userError } = await supabase
                 .from('users')
                 .select('*')
                 .eq('id', userId)
                 .single()
 
-            if (error) {
+            // Fetch Talent Profile (for photo etc)
+            const { data: talentData } = await supabase
+                .from('talent_profiles')
+                .select('*')
+                .eq('user_id', userId)
+                .single()
+
+            if (userError) {
                 // If row not found (PGRST116), try to self-heal by inserting user
-                if (error.code === 'PGRST116') {
+                if (userError.code === 'PGRST116') {
                     console.warn('Profile missing in public.users, attempting self-heal...')
                     const { data: { session } } = await supabase.auth.getSession()
                     if (session?.user) {
@@ -104,22 +117,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                             const { data: retryData } = await supabase.from('users').select('*').eq('id', userId).single()
                             if (retryData) {
                                 setProfile(retryData)
-                                return // specific return not strictly needed but good flow
-                            }
-                        } else {
-                            console.error('Failed to create missing public user record:', insertError)
-                            if (typeof insertError === 'object' && insertError !== null) {
-                                console.error('Insert Error Details:', JSON.stringify(insertError, null, 2));
+                                if (talentData) setTalentProfile(talentData)
+                                return
                             }
                         }
                     }
-                } else {
-                    console.error('Error fetching profile:', error.message, error)
                 }
             } else {
-                setProfile(data)
+                setProfile(userData)
+                if (talentData) setTalentProfile(talentData)
+                else setTalentProfile(null)
+
                 // Force Password Change Check
-                if (data.must_change_password && window.location.pathname !== '/change-password') {
+                if (userData.must_change_password && window.location.pathname !== '/change-password') {
                     router.push('/change-password')
                 }
             }
@@ -136,7 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, signOut }}>
+        <AuthContext.Provider value={{ user, profile, talentProfile, loading, signOut }}>
             {children}
         </AuthContext.Provider>
     )

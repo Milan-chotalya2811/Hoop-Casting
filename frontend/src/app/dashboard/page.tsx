@@ -78,8 +78,12 @@ export default function Dashboard() {
                 {/* User Card */}
                 <div className="glass" style={{ padding: '30px', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
-                        <div style={{ padding: '20px', background: 'var(--surface)', borderRadius: '50%', flexShrink: 0 }}>
-                            <UserCircle size={40} color="var(--primary)" />
+                        <div style={{ padding: '2px', background: 'var(--surface)', borderRadius: '50%', flexShrink: 0, width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                            {talentProfile?.profile_photo_url ? (
+                                <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                            ) : (
+                                <UserCircle size={40} color="var(--primary)" />
+                            )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <h2 style={{ fontSize: '1.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={profile?.name || user.email}>
