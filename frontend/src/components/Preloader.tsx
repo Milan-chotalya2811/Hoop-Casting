@@ -11,42 +11,33 @@ import logo from '../../public/logo.png' // Import logo to get dimensions if nee
 
 export default function GlobalPreloader() {
     const pathname = usePathname()
-    const [loading, setLoading] = useState(true)
-    const [isInitialLoad, setIsInitialLoad] = useState(true)
+    const [loading, setLoading] = useState(false)
 
-    // Handle Route Changes
-    // Next.js App Router (Next 13+) navigates instantly on client. 
-    // To simulate a "page transition" loader, we trigger it on pathname change.
     useEffect(() => {
-        // When path changes, show loader
-        setLoading(true)
+        // Only show loader if:
+        // 1. It's the Home Page ('/')
+        // 2. It hasn't been shown in this session yet
+        const hasLoaded = sessionStorage.getItem('monkey_preloader_shown')
 
-        // Artificial delay (or wait for something?)
-        // Since Next.js is fast, a small delay gives the "premium" feel 
-        // without blocking too long.
-        // We can check document.readyState but on client nav it's always complete.
+        if (pathname === '/' && !hasLoaded) {
+            setLoading(true)
 
-        const timer = setTimeout(() => {
-            setLoading(false)
-        }, 1500) // 1.5s display time min - adjust as needed for "premium" feel
+            // Artificial delay for premium feel
+            const timer = setTimeout(() => {
+                setLoading(false)
+                sessionStorage.setItem('monkey_preloader_shown', 'true')
+            }, 2000)
 
-        return () => clearTimeout(timer)
-    }, [pathname])
-
-    // Initial Load
-    useEffect(() => {
-        const handleLoad = () => {
-            // For initial load, we might want to wait a bit more or until ready
-            setTimeout(() => setLoading(false), 2000)
-        }
-
-        if (document.readyState === 'complete') {
-            handleLoad()
+            return () => clearTimeout(timer)
         } else {
-            window.addEventListener('load', handleLoad)
-            return () => window.removeEventListener('load', handleLoad)
+            setLoading(false)
         }
-    }, [])
+    }, [pathname]) // Dependence on pathname is okay if we gate it with logic, but simpler to run once on mount if strictly "entry". 
+    // However, if user navigates to Home via link, do we show it? 
+    // "jab website pe enter hoga tab hi" usually means session start.
+    // If I click Home from About, it's not "Entering website".
+    // So the session storage check handles that. If I already saw it, I won't see it again.
+
 
     // Lock scrolling when loading
     useEffect(() => {
@@ -72,7 +63,7 @@ export default function GlobalPreloader() {
                         left: 0,
                         width: '100vw',
                         height: '100vh',
-                        backgroundColor: '#0a0a0a', // Dark theme background
+                        backgroundColor: '#ffffff', // White background
                         zIndex: 9999,
                         display: 'flex',
                         flexDirection: 'column',
