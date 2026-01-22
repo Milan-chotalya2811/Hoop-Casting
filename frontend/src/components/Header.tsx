@@ -83,8 +83,9 @@ const Header = () => {
                                 )}
                             </div>
                         ) : (
-                            <Link href="/register" className="btn btn-primary" style={{ fontSize: '0.9rem', padding: '8px 20px' }}>
-                                Login / Register
+                            <Link href="/register" className={`btn btn-primary ${styles.loginBtn}`}>
+                                <span className={styles.desktopAuthText}>Login / Register</span>
+                                <span className={styles.mobileAuthText}>Register</span>
                             </Link>
                         )}
 

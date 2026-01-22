@@ -11,27 +11,34 @@ import Preloader from '@/components/Preloader'
 import { useEffect, useState } from 'react'
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
+
   return (
     <main>
-      <Preloader />
-      <HeroSection />
+      <Preloader onComplete={() => setLoading(false)} />
 
-      {/* Intro Section - Monkey Studios Style */}
-      <StudioIntro />
+      {!loading && (
+        <>
+          <HeroSection />
 
-      {/* Social Cinema Intro - Swaps image/content order */}
-      <SocialCinemaIntro />
+          {/* Intro Section - Monkey Studios Style */}
+          <StudioIntro />
 
-      <WhyCreated />
-      <WhatWeDo />
-      <Philosophy />
-      <Ecosystem />
+          {/* Social Cinema Intro - Swaps image/content order */}
+          <SocialCinemaIntro />
 
-      {/* Final CTA */}
-      <PromiseCTA />
+          <WhyCreated />
+          <WhatWeDo />
+          <Philosophy />
+          <Ecosystem />
 
-      {/* Separated Final Word Section */}
-      <FinalWord />
+          {/* Final CTA */}
+          <PromiseCTA />
+
+          {/* Separated Final Word Section */}
+          <FinalWord />
+        </>
+      )}
     </main>
   );
 }

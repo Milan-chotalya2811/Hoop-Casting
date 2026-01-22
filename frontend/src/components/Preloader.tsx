@@ -9,17 +9,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 // Note: We'll use /logo.png for string path to avoid import issues with Next.js specific image handling if not enabled
 // but here we just need styling. 
 
-export default function GlobalPreloader() {
+export default function GlobalPreloader({ onComplete }: { onComplete: () => void }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         // Artificial delay for premium feel
         const timer = setTimeout(() => {
             setLoading(false)
+            if (onComplete) onComplete()
         }, 3000)
 
         return () => clearTimeout(timer)
-    }, [])
+    }, [onComplete])
 
 
     // Lock scrolling when loading

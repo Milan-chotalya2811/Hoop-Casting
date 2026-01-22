@@ -158,3 +158,35 @@
         transform: translateY(0);
     }
 }
+
+.loginBtn {
+    font-size: 0.9rem;
+    padding: 8px 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.desktopAuthText {
+    display: inline;
+}
+
+.mobileAuthText {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .loginBtn {
+        padding: 6px 14px;
+        font-size: 0.85rem;
+    }
+
+    .desktopAuthText {
+        display: none;
+    }
+
+    .mobileAuthText {
+        display: inline;
+    }
+}
