@@ -2,41 +2,24 @@
 
 import React, { useEffect, useState } from 'react'
 import Lottie from 'lottie-react'
-import { usePathname } from 'next/navigation'
+
 import animationData from '../../public/preloader.json'
 import { motion, AnimatePresence } from 'framer-motion'
-import logo from '../../public/logo.png' // Import logo to get dimensions if needed, or just use string path
+
 // Note: We'll use /logo.png for string path to avoid import issues with Next.js specific image handling if not enabled
 // but here we just need styling. 
 
 export default function GlobalPreloader() {
-    const pathname = usePathname()
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Only show loader if:
-        // 1. It's the Home Page ('/')
-        // 2. It hasn't been shown in this session yet
-        const hasLoaded = sessionStorage.getItem('monkey_preloader_shown')
-
-        if (pathname === '/' && !hasLoaded) {
-            setLoading(true)
-
-            // Artificial delay for premium feel
-            const timer = setTimeout(() => {
-                setLoading(false)
-                sessionStorage.setItem('monkey_preloader_shown', 'true')
-            }, 2000)
-
-            return () => clearTimeout(timer)
-        } else {
+        // Artificial delay for premium feel
+        const timer = setTimeout(() => {
             setLoading(false)
-        }
-    }, [pathname]) // Dependence on pathname is okay if we gate it with logic, but simpler to run once on mount if strictly "entry". 
-    // However, if user navigates to Home via link, do we show it? 
-    // "jab website pe enter hoga tab hi" usually means session start.
-    // If I click Home from About, it's not "Entering website".
-    // So the session storage check handles that. If I already saw it, I won't see it again.
+        }, 3000)
+
+        return () => clearTimeout(timer)
+    }, [])
 
 
     // Lock scrolling when loading
