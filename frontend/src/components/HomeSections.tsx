@@ -152,8 +152,8 @@ export const WhatIsHoopCasting = () => {
                 <div className={styles.gridSplit}>
                     <div className={styles.visualAbstract}>
                         <Image
-                            src="https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?bf=85&w=800&auto=format&fit=crop"
-                            alt="Casting Director"
+                            src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?bf=85&w=800&auto=format&fit=crop"
+                            alt="Authentic People"
                             fill
                             className={styles.imageCover}
                         />

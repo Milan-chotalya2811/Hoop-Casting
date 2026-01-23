@@ -128,7 +128,8 @@
 }
 
 .highlightText {
-    color: var(--primary);
+    color: #1F2B5C;
+    /* Navy instead of Gold */
     font-weight: 600;
 }
 
@@ -174,6 +175,8 @@
     }
 }
 
+
+/* Update primary button color to #1F2B5C (Navy) and hover to Gold */
 .primaryBtn {
     position: relative;
     display: inline-flex;
@@ -183,38 +186,27 @@
     font-size: 1.125rem;
     font-weight: 700;
     color: white;
-    background-color: var(--primary);
+    background-color: #1F2B5C;
+    /* Navy Blue */
     border-radius: 9999px;
     transition: all 0.3s;
     box-shadow: var(--shadow-glow);
 }
 
 .primaryBtn:hover {
-    background-color: var(--primary-hover);
+    background-color: #D4AF37;
+    /* Gold */
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
 }
 
-.heroScrollIndicator {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.5);
-    z-index: 10;
-}
-
-.scrollLine {
-    width: 1px;
-    height: 3rem;
-    background: linear-gradient(to bottom, transparent, white, transparent);
-}
+/* Update Black Button to match new scheme if needed or keep white? User said "button normal background color #1F2B5C" - applies to primary CTA likely. */
 
 /* --- General Content Styling (Light Theme) --- */
 .sectionTitle,
 .title,
 .subtitle {
-    color: var(--text-main) !important;
+    color: #1F2B5C !important;
 }
 
 .title {
@@ -226,9 +218,11 @@
     -webkit-background-clip: unset;
     background-clip: unset;
     -webkit-text-fill-color: unset;
-    color: var(--text-main);
+    color: #1F2B5C;
+    /* Specific Navy Color */
     margin-bottom: 0.5rem;
 }
+
 
 @media (min-width: 768px) {
     .title {
@@ -460,7 +454,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary);
+    color: #1F2B5C;
+    /* Navy Icon */
     box-shadow: var(--shadow-sm);
     transition: all 0.3s;
 }
@@ -711,8 +706,9 @@
 }
 
 .blackBtn {
-    background-color: #ffffff;
-    color: var(--primary);
+    background-color: #1F2B5C;
+    /* Navy Background */
+    color: #ffffff;
     padding: 1.25rem 2.5rem;
     font-size: 1.25rem;
     border-radius: 9999px;
@@ -726,7 +722,9 @@
 
 .blackBtn:hover {
     transform: scale(1.05);
-    background-color: #f8fafc;
+    background-color: #D4AF37;
+    /* Gold Hover */
+    color: #ffffff;
 }
 
 .linkText {
@@ -753,5 +751,6 @@
     align-items: center;
     gap: 0.75rem;
     box-shadow: var(--shadow-sm);
-    color: var(--text-main);
+    color: #1F2B5C;
+    /* Explicit Navy */
 }
