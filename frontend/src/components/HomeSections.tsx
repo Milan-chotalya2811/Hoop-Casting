@@ -80,6 +80,7 @@ export const HeroSection = () => {
                     <h1 className={styles.heroHeadline}>
                         “Keval screen <br />
                         dekhna hai?<br />
+                        <br /> {/* Added space for visual separation */}
                         Ya screen par <br />
                         aana hai?”
                     </h1>
@@ -128,7 +129,7 @@ export const HeroSection = () => {
                         <span>This is a casting gateway</span>
                     </div>
 
-                    <Link href="/register" className={styles.primaryBtn}>
+                    <Link href="/profile/edit" className={styles.primaryBtn}>
                         <span style={{ marginRight: '0.5rem' }}>Apply for Hoop Casting</span>
                         <Play size={20} fill="currentColor" />
                     </Link>
@@ -455,7 +456,7 @@ export const MessageForDreamers = () => {
 
                     <div className={styles.divider}></div>
 
-                    <p style={{ fontSize: '1.25rem', color: 'white', fontWeight: 500 }}>If the answer feels like yes — <span className={styles.highlightText} style={{ borderBottom: '1px solid var(--primary)' }}>don’t overthink.</span></p>
+                    <p style={{ fontSize: '1.25rem', color: 'white', fontWeight: 500 }}>If the answer feels like yes — <span className={styles.highlightText} style={{ borderBottom: '1px solid #D1AE37', color: '#D1AE37' }}>don’t overthink.</span></p>
                 </motion.div>
             </div>
         </section>
@@ -485,7 +486,7 @@ export const FinalCTA = () => {
                         </Link>
                     </div>
 
-                    <p className={styles.linkText}>
+                    <p className={styles.linkText} style={{ color: '#1F2B5C' }}>
                         👉 Submit Your Hoop Casting Profile Now
                     </p>
                 </motion.div>

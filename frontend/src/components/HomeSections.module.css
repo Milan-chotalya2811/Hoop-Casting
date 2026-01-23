@@ -87,7 +87,8 @@
 .heroHeadline {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 3rem;
+    font-size: 2.2rem;
+    /* Reduced from 3rem */
     line-height: 1;
     letter-spacing: -0.025em;
     margin-bottom: 2rem;
@@ -98,13 +99,15 @@
 /* Responsive Font Sizes for Headline */
 @media (min-width: 768px) {
     .heroHeadline {
-        font-size: 4.5rem;
+        font-size: 3.5rem;
+        /* Reduced from 4.5rem */
     }
 }
 
 @media (min-width: 1024px) {
     .heroHeadline {
-        font-size: 6rem;
+        font-size: 5rem;
+        /* Reduced from 6rem */
     }
 }
 
@@ -430,9 +433,29 @@
 
 /* --- What We Look For --- */
 .whatWeLookForSection {
-    background-color: var(--surface-highlight);
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?q=80&w=2000&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     text-align: center;
-    padding: 6rem 0;
+    padding: 8rem 0;
+    color: white;
+    /* Ensure text is visible on dark banner */
+}
+
+.whatWeLookForSection .sectionTitle,
+.whatWeLookForSection .title,
+.whatWeLookForSection .subtitle {
+    color: #ffffff !important;
+}
+
+.whatWeLookForSection .attributeItem span {
+    color: #e5e5e5 !important;
+}
+
+.whatWeLookForSection .quote {
+    color: #f3f4f6;
+    font-style: italic;
 }
 
 .attributesGrid {
@@ -664,7 +687,7 @@
 }
 
 .highlightAnswer {
-    color: var(--primary);
+    color: #D1AE37;
 }
 
 .divider {
@@ -678,20 +701,21 @@
 /* --- Final CTA --- */
 .ctaSection {
     padding: 8rem 0;
-    background-color: var(--primary);
-    /* Gold background */
+    background-color: #ffffff;
+    /* White background */
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border-top: 1px solid var(--border);
 }
 
 .ctaNoise {
     position: absolute;
     inset: 0;
     background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.1;
+    opacity: 0.05;
     mix-blend-mode: multiply;
 }
 
@@ -705,10 +729,10 @@
     font-family: var(--font-heading);
     font-weight: 700;
     font-size: 2.25rem;
-    color: #ffffff;
-    /* White text on Gold */
+    color: #D1AE37;
+    /* Gold text */
     margin-bottom: 1.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* text-shadow: removed shadow for clean look on white */
 }
 
 @media (min-width: 768px) {
