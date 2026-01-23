@@ -11,7 +11,7 @@ export default function Footer() {
                     {/* Brand Column */}
                     <div className={styles.brandColumn}>
                         <Link href="/" style={{ display: 'inline-block', marginBottom: '15px' }}>
-                            <img src="/logo.png" alt="Monkey Casting Logo" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+                            <img src="/footer_logo.png" alt="Monkey Casting Logo" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
                         </Link>
                         <p className={styles.brandDesc}>
                             The premier casting gateway connecting extraordinary talent with world-class productions.
