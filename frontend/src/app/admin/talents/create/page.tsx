@@ -450,6 +450,221 @@ export default function CreateTalent() {
                                     </>
                                 )}
 
+                                {/* Video Editor */}
+                                {selectedCategory === "Video Editor" && (
+                                    <>
+                                        <SectionTitle title="Personal & Contact Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={formData.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="city" label="Current City / Location" value={formData.city} onChange={handleChange} required />
+                                        </div>
+
+                                        <SectionTitle title="Work & Experience" />
+                                        <div className={styles.formGroup}>
+                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
+                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={formData.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
+                                        </div>
+
+                                        <Field name="past_brand_work" label="Has worked with brands? (List them)" value={formData.past_brand_work} onChange={handleChange} />
+
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                                            <div className={styles.formGroup}>
+                                                <label>Agency Status</label>
+                                                <select name="agency_status" className={styles.select} value={formData.agency_status} onChange={handleChange}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Independent">Independent</option>
+                                                    <option value="Agency">Agency Signed</option>
+                                                </select>
+                                            </div>
+                                            <Field name="pay_rates" label="Charges (per day/project)" value={formData.pay_rates} onChange={handleChange} />
+                                            <div className={styles.formGroup}>
+                                                <label>Travel to Surat?</label>
+                                                <select name="travel_surat" className={styles.select} value={formData.travel_surat} onChange={handleChange}>
+                                                    <option value="Yes">Yes</option>
+                                                    <option value="No">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <SectionTitle title="Specific Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={formData.emergency_contact} onChange={handleChange} />
+                                            <Field name="dob" label="Date of Birth" type="date" value={formData.dob} onChange={handleChange} />
+                                            <Field name="social_links" label="Personal Instagram / Social Link" value={formData.social_links} onChange={handleChange} />
+                                            <Field name="workExperience" label="Experience (Years)" value={customValues.workExperience} onChange={handleChange} />
+                                        </div>
+
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Field name="projectTypes" label="Project Types" value={customValues.projectTypes} onChange={handleChange} />
+                                            <Field name="bio" label="Bio / About Yourself" type="textarea" value={formData.bio} onChange={handleChange} fullWidth />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Props Renting */}
+                                {selectedCategory === "Props Renting" && (
+                                    <>
+                                        <SectionTitle title="Personal & Contact Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={formData.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="city" label="Current City / Location" value={formData.city} onChange={handleChange} required />
+                                        </div>
+
+                                        <SectionTitle title="Work & Experience" />
+                                        <div className={styles.formGroup}>
+                                            <label>Relevant Work Links</label>
+                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={formData.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
+                                        </div>
+
+                                        <Field name="past_brand_work" label="Has worked with brands? (List them)" value={formData.past_brand_work} onChange={handleChange} />
+
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                                            <div className={styles.formGroup}>
+                                                <label>Agency Status</label>
+                                                <select name="agency_status" className={styles.select} value={formData.agency_status} onChange={handleChange}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Independent">Independent</option>
+                                                    <option value="Agency">Agency Signed</option>
+                                                </select>
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <label>Rental Charges</label>
+                                                <input className={styles.input} type="text" name="pay_rates" value={formData.pay_rates ?? ''} onChange={handleChange} />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <label>Travel to Surat?</label>
+                                                <select name="travel_surat" className={styles.select} value={formData.travel_surat} onChange={handleChange}>
+                                                    <option value="Yes">Yes</option>
+                                                    <option value="No">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <SectionTitle title="Prop Details & Services" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={formData.emergency_contact} onChange={handleChange} />
+                                            <Select name="ownInventory" label="Own Inventory?" options={["Yes", "No", "Partial"]} value={customValues.ownInventory} onChange={handleChange} />
+                                            <Select name="propsDelivery" label="Delivery to Location?" options={["Yes", "No", "Chargeable"]} value={customValues.propsDelivery} onChange={handleChange} />
+                                            <Select name="setupPickup" label="Setup and Pickup?" options={["Yes", "No", "Extra Charge"]} value={customValues.setupPickup} onChange={handleChange} />
+                                        </div>
+
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Field name="propsTypes" label="Types of Props Provided" type="textarea" value={customValues.propsTypes} onChange={handleChange} placeholder="e.g. Vintage, Modern..." />
+                                            <Select name="propsStyles" label="Multiple Styles Available?" options={["Yes", "No", "Depends on Request"]} value={customValues.propsStyles} onChange={handleChange} />
+                                            <Select name="propsMaintenance" label="Shoot-ready Maintenance?" options={["Yes", "No"]} value={customValues.propsMaintenance} onChange={handleChange} />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Studio Renting */}
+                                {selectedCategory === "Studio Renting" && (
+                                    <>
+                                        <SectionTitle title="Personal & Contact Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={formData.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="city" label="Current City / Location" value={formData.city} onChange={handleChange} required />
+                                        </div>
+
+                                        <SectionTitle title="Work & Experience" />
+                                        <div className={styles.formGroup}>
+                                            <label>Relevant Work Links</label>
+                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={formData.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
+                                        </div>
+
+                                        <Field name="past_brand_work" label="Has worked with brands?" value={formData.past_brand_work} onChange={handleChange} />
+
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                                            <div className={styles.formGroup}>
+                                                <label>Agency Status</label>
+                                                <select name="agency_status" className={styles.select} value={formData.agency_status} onChange={handleChange}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Independent">Independent</option>
+                                                    <option value="Agency">Agency Signed</option>
+                                                </select>
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <label>Rental Charges</label>
+                                                <input className={styles.input} type="text" name="pay_rates" value={formData.pay_rates ?? ''} onChange={handleChange} />
+                                            </div>
+                                            <div className={styles.formGroup}>
+                                                <label>Travel to Surat?</label>
+                                                <select name="travel_surat" className={styles.select} value={formData.travel_surat} onChange={handleChange}>
+                                                    <option value="Yes">Yes</option>
+                                                    <option value="No">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <SectionTitle title="Studio Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="emergency_contact" label="Emergency Contact" value={formData.emergency_contact} onChange={handleChange} />
+                                            <Field name="workExperience" label="Years Renting Out?" value={customValues.workExperience} onChange={handleChange} />
+                                            <Field name="studioType" label="Studio Type" value={customValues.studioType} onChange={handleChange} placeholder="e.g. Daylight, Chroma..." />
+                                            <Field name="studioSize" label="Studio Size" value={customValues.studioSize} onChange={handleChange} />
+                                        </div>
+
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Select name="studioEquipment" label="Equipment Included?" options={["Yes", "No", "Extra Charge"]} value={customValues.studioEquipment} onChange={handleChange} />
+                                            <Select name="studioParking" label="Parking Available?" options={["Yes", "No", "Limited"]} value={customValues.studioParking} onChange={handleChange} />
+                                            <Select name="studioFacilities" label="Facilities (AC/Power)?" options={["Yes", "No", "Partial"]} value={customValues.studioFacilities} onChange={handleChange} />
+                                            <Select name="studioRules" label="Allow Food/Makeup?" options={["Yes", "No", "Restricted Area"]} value={customValues.studioRules} onChange={handleChange} />
+                                            <Select name="studioCustomSetups" label="Open to Custom Setups?" options={["Yes", "No", "Discuss First"]} value={customValues.studioCustomSetups} onChange={handleChange} />
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* Set Designer */}
+                                {selectedCategory === "Set Designer" && (
+                                    <>
+                                        <SectionTitle title="Personal & Contact Details" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={formData.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="city" label="Current City / Location" value={formData.city} onChange={handleChange} required />
+                                        </div>
+
+                                        <SectionTitle title="Work & Experience" />
+                                        <div className={styles.formGroup}>
+                                            <label>Relevant Work Links</label>
+                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={formData.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
+                                        </div>
+
+                                        <Field name="past_brand_work" label="Has worked with brands?" value={formData.past_brand_work} onChange={handleChange} />
+
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                                            <div className={styles.formGroup}>
+                                                <label>Agency Status</label>
+                                                <select name="agency_status" className={styles.select} value={formData.agency_status} onChange={handleChange}>
+                                                    <option value="">Select...</option>
+                                                    <option value="Independent">Independent</option>
+                                                    <option value="Agency">Agency Signed</option>
+                                                </select>
+                                            </div>
+                                            <Field name="pay_rates" label="Charges" value={formData.pay_rates} onChange={handleChange} />
+                                            <div className={styles.formGroup}>
+                                                <label>Travel to Surat?</label>
+                                                <select name="travel_surat" className={styles.select} value={formData.travel_surat} onChange={handleChange}>
+                                                    <option value="Yes">Yes</option>
+                                                    <option value="No">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <SectionTitle title="Design Expertise" />
+                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                                            <Field name="workExperience" label="Experience (Years)" value={customValues.workExperience} onChange={handleChange} />
+                                            <Select name="setPropsHandler" label="Handle Props/Decor?" options={["Yes", "No", "Partial"]} value={customValues.setPropsHandler} onChange={handleChange} />
+                                            <Select name="setIndoorOutdoor" label="Indoor & Outdoor?" options={["Both", "Indoor Only", "Outdoor Only"]} value={customValues.setIndoorOutdoor} onChange={handleChange} />
+                                            <Select name="setVisuals" label="Provide Visuals/Sketches?" options={["Yes", "No", "Upon Request"]} value={customValues.setVisuals} onChange={handleChange} />
+                                        </div>
+
+                                        <div style={{ marginTop: '20px' }}>
+                                            <Select name="setBudget" label="Work within Budget?" options={["Yes", "No"]} value={customValues.setBudget} onChange={handleChange} />
+                                            <Select name="setInstallation" label="Installation?" options={["Use My Team", "Myself", "Coordinate with Production"]} value={customValues.setInstallation} onChange={handleChange} />
+                                            <Select name="setCollaboration" label="Collaborate with others?" options={["Yes", "No"]} value={customValues.setCollaboration} onChange={handleChange} />
+                                        </div>
+                                    </>
+                                )}
+
                                 {/* Others/Fallback */}
                                 {!["Actor", "Model", "Anchor", "Makeup Artist", "Stylist", "Art Direction", "Photographer", "Video Editor", "Videographer", "Internship in Acting", "Internship in Modeling", "Internship in Anchoring", "Props Renting", "Studio Renting", "Set Designer"].includes(selectedCategory) && (
                                     <>
