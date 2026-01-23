@@ -47,7 +47,7 @@ export default function GlobalPreloader({ onComplete }: { onComplete: () => void
                         left: 0,
                         width: '100vw',
                         height: '100vh',
-                        backgroundColor: '#000000', // Black background
+                        backgroundColor: '#ffffff', // White background
                         zIndex: 9999,
                         display: 'flex',
                         flexDirection: 'column',

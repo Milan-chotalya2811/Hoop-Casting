@@ -1,31 +1,31 @@
 :root {
-  /* Dark Cinematic Theme Palette */
-  --background: #000000;
-  --surface: #0a0a0a;
-  /* Deep textured grey/black */
-  --surface-highlight: #141414;
-  --border: #2a2a2a;
+  /* White Premium Cinematic Theme Palette */
+  --background: #ffffff;
+  --surface: #f8f9fa;
+  /* Very light grey for slight separation */
+  --surface-highlight: #f1f5f9;
+  --border: #e2e8f0;
 
   --primary: #D4AF37;
   /* Metallic Gold */
-  --primary-hover: #F2C94C;
-  --primary-text: #000000;
-  /* Dark text on Gold buttons */
+  --primary-hover: #b4941f;
+  --primary-text: #ffffff;
+  /* White text on Gold buttons */
 
-  --secondary: #e0e0e0;
-  /* Soft White as secondary */
-  --secondary-text: #000000;
+  --secondary: #1f295c;
+  /* Deep Navy as secondary */
+  --secondary-text: #ffffff;
 
-  --text-main: #ffffff;
-  /* Pure White for main text */
-  --text-muted: #9ca3af;
-  /* Cool grey for muted text */
+  --text-main: #1a1a1a;
+  /* Near Black for main text */
+  --text-muted: #64748b;
+  /* Slate grey for muted text */
 
   --success: #10b981;
   --error: #ef4444;
 
-  --glass-bg: rgba(10, 10, 10, 0.8);
-  --glass-border: rgba(212, 175, 55, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(212, 175, 55, 0.2);
 
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -35,9 +35,9 @@
   --radius-lg: 16px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
-  --shadow-glow: 0 0 30px rgba(212, 175, 55, 0.2);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.3);
 }
 
 * {

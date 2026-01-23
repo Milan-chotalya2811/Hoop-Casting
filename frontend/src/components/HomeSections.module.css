@@ -9,6 +9,8 @@
     padding: 6rem 1.5rem;
     /* py-24 px-6 equivalent */
     overflow: hidden;
+    background-color: var(--background);
+    color: var(--text-main);
 }
 
 .container {
@@ -21,7 +23,7 @@
 
 /* Animations / Shared */
 .fadeIn {
-    animation: fadeIn 0.8s ease-out forwards;
+    will-change: opacity, transform;
 }
 
 /* --- Hero Section --- */
@@ -33,24 +35,31 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    /* Hero stays dark/cinematic for impact */
     background-color: #000000;
+    color: white;
 }
 
 .bgOverlay {
     position: absolute;
     inset: 0;
     z-index: 0;
-    opacity: 0.4;
-    background: radial-gradient(circle at center, #1f2937, #000000, #000000);
-    /* gray-800 to black */
+}
+
+.heroImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
 }
 
 .grainOverlay {
     position: absolute;
     inset: 0;
     background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.2;
-    filter: brightness(1) contrast(1.5) grayscale(1);
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+    z-index: 1;
 }
 
 .heroContent {
@@ -69,11 +78,9 @@
     font-size: 3rem;
     line-height: 1;
     letter-spacing: -0.025em;
-    margin-bottom: 1.5rem;
-    background: linear-gradient(to bottom, #ffffff, #6b7280);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    margin-bottom: 2rem;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 /* Responsive Font Sizes for Headline */
@@ -90,31 +97,37 @@
 }
 
 .scrollingTextContainer {
-    height: 8rem;
-    margin-bottom: 2rem;
+    height: 4rem;
+    /* Fixed height to prevent layout shift */
+    margin-bottom: 3rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 
 .scrollingText {
-    font-size: 1.125rem;
-    /* lg */
-    font-weight: 300;
+    font-size: 1.25rem;
+    font-weight: 400;
     letter-spacing: 0.05em;
-    color: #d1d5db;
-    /* gray-300 */
+    color: #e5e5e5;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 @media (min-width: 768px) {
     .scrollingText {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
     }
 }
 
 .highlightText {
     color: var(--primary);
+    font-weight: 600;
 }
 
 .welcomeText {
@@ -127,7 +140,7 @@
 
 @media (min-width: 768px) {
     .welcomeText {
-        font-size: 1.875rem;
+        font-size: 2rem;
     }
 }
 
@@ -142,18 +155,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     font-size: 0.875rem;
-    color: #9ca3af;
-    /* gray-400 */
-    font-weight: 300;
-    letter-spacing: 0.1em;
+    color: #d4d4d4;
+    font-weight: 400;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
 }
 
 @media (min-width: 768px) {
     .disclaimer {
         flex-direction: row;
+        gap: 1.5rem;
     }
 }
 
@@ -162,10 +175,10 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem 2rem;
+    padding: 1rem 2.5rem;
     font-size: 1.125rem;
     font-weight: 700;
-    color: #000000;
+    color: white;
     background-color: var(--primary);
     border-radius: 9999px;
     transition: all 0.3s;
@@ -173,16 +186,18 @@
 }
 
 .primaryBtn:hover {
-    background-color: #ffffff;
-    transform: scale(1.05);
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4);
 }
 
 .heroScrollIndicator {
     position: absolute;
-    bottom: 2.5rem;
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    z-index: 10;
 }
 
 .scrollLine {
@@ -191,10 +206,67 @@
     background: linear-gradient(to bottom, transparent, white, transparent);
 }
 
+/* --- General Content Styling (Light Theme) --- */
+.sectionTitle,
+.title,
+.subtitle {
+    color: var(--text-main) !important;
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    -webkit-text-fill-color: unset;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .title {
+        font-size: 3rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .title {
+        font-size: 3.75rem;
+    }
+}
+
+
+.subtitle {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.sectionTitle {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.alignLeft {
+    text-align: left;
+}
+
+.alignRight {
+    text-align: right;
+}
+
+
 /* --- What We Do --- */
 .whatWeDoSection {
-    background-color: var(--surface);
-    color: white;
+    background-color: #ffffff;
+    color: var(--text-main);
 }
 
 .gridSplit {
@@ -211,19 +283,21 @@
 
 .visualAbstract {
     position: relative;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     border-radius: 1rem;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    background: linear-gradient(to bottom right, var(--surface-highlight), #000000);
+    box-shadow: var(--shadow-lg);
 }
 
-.iconPlaceholder {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.imageCover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+.visualAbstract:hover .imageCover {
+    transform: scale(1.05);
 }
 
 .abstractCaption {
@@ -232,13 +306,15 @@
     left: 0;
     right: 0;
     padding: 2rem;
-    background: linear-gradient(to top, #000000, transparent);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
 }
 
 .abstractText {
     font-family: var(--font-heading);
     font-size: 1.875rem;
     line-height: 1.2;
+    font-weight: 700;
 }
 
 .listGroup {
@@ -251,6 +327,7 @@
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
+    font-size: 1.1rem;
 }
 
 .dot {
@@ -262,8 +339,8 @@
 
 /* --- Why Different --- */
 .whyDifferentSection {
-    background-color: #000000;
-    color: white;
+    background-color: var(--surface);
+    color: var(--text-main);
     padding-top: 8rem;
     padding-bottom: 8rem;
 }
@@ -287,69 +364,39 @@
 }
 
 .card {
-    background-color: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 2rem;
+    background-color: #ffffff;
+    border: 1px solid var(--border);
+    padding: 2.5rem;
     border-radius: 0.75rem;
     transition: all 0.3s;
+    box-shadow: var(--shadow-sm);
 }
 
 .card:hover {
-    border-color: rgba(212, 175, 55, 0.5);
-    /* Primary/Gold */
+    border-color: var(--primary);
     transform: translateY(-5px);
-}
-
-.sectionTitle {
-    margin-bottom: 3rem;
-    text-align: center;
-}
-
-.alignLeft {
-    text-align: left;
-}
-
-.alignRight {
-    text-align: right;
-}
-
-.subtitle {
-    display: inline-block;
-    color: var(--primary);
-    font-size: 0.875rem;
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-}
-
-.title {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 2.25rem;
-    line-height: 1.2;
-    background: linear-gradient(135deg, white, #a1a1a1);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-@media (min-width: 768px) {
-    .title {
-        font-size: 3rem;
-    }
-}
-
-@media (min-width: 1024px) {
-    .title {
-        font-size: 3.75rem;
-    }
+    box-shadow: var(--shadow-lg);
 }
 
 /* --- Who Can Apply --- */
 .whoCanApplySection {
-    background-color: var(--surface-highlight);
+    background-color: #ffffff;
     padding: 6rem 0;
+}
+
+.whoCanImageContainer {
+    position: relative;
+    height: 100%;
+    min-height: 400px;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.whoCanImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .checklist {
@@ -368,21 +415,12 @@
 }
 
 .checkItem:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-}
-
-.highlightBox {
-    text-align: center;
-    padding: 3rem;
-    border: 1px solid rgba(212, 175, 55, 0.2);
-    border-radius: 1rem;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background-color: var(--surface);
 }
 
 /* --- What We Look For --- */
 .whatWeLookForSection {
-    background-color: #000000;
+    background-color: var(--surface-highlight);
     text-align: center;
     padding: 6rem 0;
 }
@@ -410,42 +448,43 @@
 }
 
 .iconCircle {
-    width: 4rem;
-    height: 4rem;
+    width: 5rem;
+    height: 5rem;
     border-radius: 50%;
-    background-color: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #ffffff;
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
 }
 
-@media (min-width: 768px) {
-    .iconCircle {
-        width: 5rem;
-        height: 5rem;
-    }
+.attributeItem:hover .iconCircle {
+    transform: scale(1.1);
+    border-color: var(--primary);
+    box-shadow: var(--shadow-glow);
 }
 
 .quote {
     font-family: var(--font-heading);
     font-style: italic;
     font-size: 1.5rem;
-    color: #6b7280;
+    color: var(--text-main);
     max-width: 48rem;
     margin: 0 auto;
 }
 
 @media (min-width: 768px) {
     .quote {
-        font-size: 1.875rem;
+        font-size: 2rem;
     }
 }
 
 /* --- Casting Process --- */
 .castingProcessSection {
-    background-color: var(--surface);
+    background-color: #ffffff;
     padding: 6rem 0;
 }
 
@@ -462,7 +501,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--border);
     transform: translateX(-50%);
 }
 
@@ -518,7 +557,7 @@
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background-color: var(--surface);
+    background-color: #ffffff;
     border: 2px solid var(--primary);
     z-index: 10;
     display: flex;
@@ -557,7 +596,23 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: radial-gradient(circle at center, #111827, #000000);
+    background-color: #000000;
+    /* Stays dark for emotion */
+    color: white;
+}
+
+.dreamersBg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+.dreamersImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.4;
+    filter: grayscale(100%);
 }
 
 .dreamersContent {
@@ -588,8 +643,7 @@
     font-family: var(--font-heading);
     font-weight: 700;
     font-size: 1.875rem;
-    color: #4b5563;
-    /* gray-600 */
+    color: #9ca3af;
 }
 
 @media (min-width: 768px) {
@@ -614,6 +668,7 @@
 .ctaSection {
     padding: 8rem 0;
     background-color: var(--primary);
+    /* Gold background */
     position: relative;
     display: flex;
     align-items: center;
@@ -639,8 +694,10 @@
     font-family: var(--font-heading);
     font-weight: 700;
     font-size: 2.25rem;
-    color: #000000;
+    color: #ffffff;
+    /* White text on Gold */
     margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 @media (min-width: 768px) {
@@ -650,31 +707,47 @@
 }
 
 .blackBtn {
-    background-color: #000000;
+    background-color: #ffffff;
     color: var(--primary);
     padding: 1.25rem 2.5rem;
     font-size: 1.25rem;
-    border-radius: 0.5rem;
+    border-radius: 9999px;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
 }
 
 .blackBtn:hover {
     transform: scale(1.05);
+    background-color: #f8fafc;
 }
 
 .linkText {
     margin-top: 2rem;
-    color: rgba(0, 0, 0, 0.7);
+    color: white;
     font-weight: 500;
     cursor: pointer;
     transition: color 0.2s;
+    opacity: 0.9;
 }
 
 .linkText:hover {
-    color: #000000;
+    opacity: 1;
+    text-decoration: underline;
+}
+
+/* Reusable badge style for Trust section (Light Theme) */
+.trustBadge {
+    background-color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-main);
 }

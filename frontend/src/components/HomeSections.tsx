@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useInView, Variants } from 'framer-motion';
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'framer-motion';
 import { Play, Star, Film, MonitorPlay, Users, Camera, Clapperboard, CheckCircle, Video, UserCheck, Heart, ArrowRight, ShieldCheck, Mail, Sparkles, TrendingUp, Globe, Mic } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -52,14 +52,22 @@ export const HeroSection = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentLine((prev) => (prev < lines.length ? prev + 1 : prev));
-        }, 1500);
+        }, 2000);
         return () => clearInterval(timer);
     }, [lines.length]);
 
     return (
         <section className={styles.heroSection}>
-            {/* Background - Cinematic Texture */}
-            <div className={styles.bgOverlay}></div>
+            {/* Background - Cinematic Image + Overlay */}
+            <div className={styles.bgOverlay}>
+                <Image
+                    src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?bf=85&w=1920&auto=format&fit=crop"
+                    alt="Cinematic Camera"
+                    fill
+                    className={styles.heroImage}
+                    priority
+                />
+            </div>
             <div className={styles.grainOverlay}></div>
 
             <div className={styles.heroContent}>
@@ -76,35 +84,38 @@ export const HeroSection = () => {
                 </motion.div>
 
                 <div className={styles.scrollingTextContainer}>
-                    {lines.map((text, index) => (
-                        <motion.p
-                            key={index}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: index < currentLine ? 1 : index === currentLine ? 1 : 0, y: 0 }}
-                            style={{ position: 'absolute' }}
-                            className={`${styles.scrollingText} ${index === currentLine ? styles.highlightText : ''}`}
-                        >
-                            {text}
-                        </motion.p>
-                    ))}
-                    {currentLine >= lines.length && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 1 }}
-                            style={{ marginTop: '1rem' }}
-                        >
-                            <p className={styles.welcomeText}>
-                                Welcome to Hoop Casting.
-                            </p>
-                        </motion.div>
-                    )}
+                    <AnimatePresence mode="wait">
+                        {currentLine < lines.length ? (
+                            <motion.p
+                                key={currentLine}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.5 }}
+                                className={styles.scrollingText}
+                            >
+                                {lines[currentLine]}
+                            </motion.p>
+                        ) : (
+                            <motion.div
+                                key="welcome"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.8 }}
+                                style={{ position: 'absolute', width: '100%', top: '50%', transform: 'translateY(-50%)' }}
+                            >
+                                <p className={styles.welcomeText}>
+                                    Welcome to Hoop Casting.
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 5.5, duration: 1 }}
+                    transition={{ delay: 3, duration: 1 }} /* Delay adjusted since lines logic changed */
                     className={styles.heroFooter}
                 >
                     <div className={styles.disclaimer}>
@@ -140,10 +151,12 @@ export const WhatIsHoopCasting = () => {
             <div className={styles.container}>
                 <div className={styles.gridSplit}>
                     <div className={styles.visualAbstract}>
-                        {/* Visual Abstract */}
-                        <div className={styles.iconPlaceholder}>
-                            <Film size={128} color="rgba(212, 175, 55, 0.1)" strokeWidth={0.5} />
-                        </div>
+                        <Image
+                            src="https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?bf=85&w=800&auto=format&fit=crop"
+                            alt="Casting Director"
+                            fill
+                            className={styles.imageCover}
+                        />
                         <div className={styles.abstractCaption}>
                             <p className={styles.abstractText}>We cast people,<br />not profiles.</p>
                         </div>
@@ -153,7 +166,9 @@ export const WhatIsHoopCasting = () => {
                         <SectionTitle title="Not Just Another Casting Platform." subtitle="Who We Are" align="left" />
 
                         <FadeIn delay={0.2} className="">
-                            <p style={{ fontSize: '1.125rem', color: '#d1d5db', lineHeight: 1.6 }}>Hoop Casting is an open casting platform for: Actors, Models, Performers, Fresh faces, and Real people with real presence.</p>
+                            <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
+                                Hoop Casting is an open casting platform for: <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Actors, Models, Performers, Fresh faces</span>, and Real people with real presence.
+                            </p>
 
                             <ul className={styles.listGroup}>
                                 {["Talent is not judged by followers.", "Recognized by expression.", "Valued for authenticity.", "Chosen for screen presence."].map((item, i) => (
@@ -165,7 +180,7 @@ export const WhatIsHoopCasting = () => {
                                         className={styles.listItem}
                                     >
                                         <div className={styles.dot} />
-                                        <span style={{ fontWeight: 500 }}>{item}</span>
+                                        <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{item}</span>
                                     </motion.li>
                                 ))}
                             </ul>
@@ -192,8 +207,8 @@ export const WhyDifferent = () => {
             <div className={styles.container}>
                 <SectionTitle title="Cinema-Grade Storytelling." subtitle="Why Us" />
 
-                <div style={{ textAlign: 'center', maxWidth: '42rem', margin: '0 auto 4rem', color: '#9ca3af' }}>
-                    <p>This is not casting for ads alone. This is where your journey doesn't end at one shoot—it begins with visibility.</p>
+                <div style={{ textAlign: 'center', maxWidth: '42rem', margin: '0 auto 4rem', color: 'var(--text-muted)' }}>
+                    <p style={{ fontSize: '1.125rem' }}>This is not casting for ads alone. This is where your journey doesn't end at one shoot—it begins with visibility.</p>
                 </div>
 
                 <div className={styles.cardsGrid}>
@@ -207,8 +222,8 @@ export const WhyDifferent = () => {
                             className={styles.card}
                         >
                             <card.icon size={40} className={styles.highlightText} style={{ marginBottom: '1.5rem' }} />
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'white' }}>{card.title}</h3>
-                            <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{card.desc}</p>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-main)' }}>{card.title}</h3>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{card.desc}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -229,9 +244,10 @@ export const WhoCanApply = () => {
 
     return (
         <section className={styles.whoCanApplySection}>
-            <div className={styles.container} style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }} className="md:flex-row">
-                    <div style={{ flex: 1 }}>
+            <div className={styles.container}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+
+                    <div className="order-2 md:order-1">
                         <SectionTitle title="No Barriers. Just Talent." subtitle="Who Can Apply" align="left" />
                         <div className={styles.checklist}>
                             {checklist.map((item, i) => (
@@ -243,22 +259,27 @@ export const WhoCanApply = () => {
                                     className={styles.checkItem}
                                 >
                                     <CheckCircle size={24} className={styles.highlightText} style={{ flexShrink: 0, marginTop: '0.25rem' }} />
-                                    <span style={{ fontSize: '1.125rem', color: '#e5e7eb' }}>{item}</span>
+                                    <span style={{ fontSize: '1.125rem', color: 'var(--text-main)' }}>{item}</span>
                                 </motion.div>
                             ))}
                         </div>
                     </div>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            className={styles.highlightBox}
-                        >
-                            <h3 style={{ fontSize: '1.875rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'white', marginBottom: '1.5rem' }}>Talent is Universal</h3>
-                            <p style={{ color: '#9ca3af', marginBottom: '2rem', lineHeight: 1.6 }}>Age, language, city, background — no barriers.</p>
-                            <div style={{ width: '100%', height: '1px', background: 'linear-gradient(to right, transparent, var(--primary), transparent)', opacity: 0.5 }}></div>
-                        </motion.div>
+
+                    <div className="order-1 md:order-2">
+                        <div className={styles.whoCanImageContainer}>
+                            <Image
+                                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?bf=85&w=800&auto=format&fit=crop"
+                                alt="Diverse Talent"
+                                fill
+                                className={styles.whoCanImage}
+                            />
+                            <div className={styles.highlightBox} style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', color: 'black' }}>
+                                <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: '0.5rem' }}>Talent is Universal</h3>
+                                <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>Age, language, city, background — no barriers.</p>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
         </section>
@@ -292,7 +313,7 @@ export const WhatWeLookFor = () => {
                             <div className={styles.iconCircle}>
                                 <attr.icon size={32} />
                             </div>
-                            <span style={{ fontSize: '1rem', fontWeight: 500, color: '#d1d5db' }}>{attr.label}</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', marginTop: '1rem' }}>{attr.label}</span>
                         </motion.div>
                     ))}
                 </div>
@@ -334,8 +355,8 @@ export const CastingProcess = () => {
                                 className={`${styles.stepRow} ${idx % 2 === 0 ? styles.stepRowReverse : ''}`}
                             >
                                 <div className={styles.stepContent}>
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>{step.title}</h3>
-                                    <p style={{ color: '#9ca3af' }}>{step.desc}</p>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>{step.title}</h3>
+                                    <p style={{ color: 'var(--text-muted)' }}>{step.desc}</p>
                                 </div>
 
                                 {/* Dot */}
@@ -359,7 +380,7 @@ export const CastingProcess = () => {
 
 export const WhyTrust = () => {
     return (
-        <section className={styles.section} style={{ backgroundColor: '#000000', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+        <section className={styles.section} style={{ backgroundColor: '#ffffff', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
             <div className={styles.container} style={{ textAlign: 'center' }}>
                 <SectionTitle title="Why Trust Hoop Casting?" />
 
@@ -372,24 +393,16 @@ export const WhyTrust = () => {
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             transition={{ delay: idx * 0.1 }}
-                            style={{
-                                backgroundColor: 'rgba(255,255,255,0.05)',
-                                padding: '0.75rem 1.5rem',
-                                borderRadius: '9999px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem'
-                            }}
+                            className={styles.trustBadge}
                         >
                             <ShieldCheck size={20} className={styles.highlightText} />
-                            <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#e5e7eb' }}>{badge}</span>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{badge}</span>
                         </motion.div>
                     ))}
                 </div>
 
                 <FadeIn>
-                    <h3 style={{ fontSize: '1.875rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'white' }}>We don’t chase trends. <span style={{ color: '#6b7280' }}>We build stories that last.</span></h3>
+                    <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--text-main)' }}>We don’t chase trends. <span style={{ color: 'var(--text-muted)' }}>We build stories that last.</span></h3>
                 </FadeIn>
             </div>
         </section>
@@ -399,6 +412,15 @@ export const WhyTrust = () => {
 export const MessageForDreamers = () => {
     return (
         <section className={styles.dreamersSection}>
+            <div className={styles.dreamersBg}>
+                <Image
+                    src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?bf=85&w=1920&auto=format&fit=crop"
+                    alt="Dreamer Background"
+                    fill
+                    className={styles.dreamersImage}
+                />
+            </div>
+
             <div className={styles.container}>
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -406,7 +428,7 @@ export const MessageForDreamers = () => {
                     transition={{ duration: 1 }}
                     className={styles.dreamersContent}
                 >
-                    <p className={styles.dreamerHeadline} style={{ fontSize: '1.25rem', color: '#9ca3af' }}>Everyone dreams of being seen on screen.<br />Very few get the right platform.</p>
+                    <p className={styles.dreamerHeadline} style={{ fontSize: '1.5rem', color: '#e5e5e5' }}>Everyone dreams of being seen on screen.<br />Very few get the right platform.</p>
 
                     <div style={{ padding: '2rem 0' }}>
                         <h2 className={styles.question}>Here, we don’t ask —</h2>
@@ -420,7 +442,7 @@ export const MessageForDreamers = () => {
 
                     <div className={styles.divider}></div>
 
-                    <p style={{ fontSize: '1.125rem', color: 'white', fontWeight: 500 }}>If the answer feels like yes — <span className={styles.highlightText} style={{ borderBottom: '1px solid var(--primary)' }}>don’t overthink.</span></p>
+                    <p style={{ fontSize: '1.25rem', color: 'white', fontWeight: 500 }}>If the answer feels like yes — <span className={styles.highlightText} style={{ borderBottom: '1px solid var(--primary)' }}>don’t overthink.</span></p>
                 </motion.div>
             </div>
         </section>

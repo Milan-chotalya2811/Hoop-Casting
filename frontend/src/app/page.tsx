@@ -18,7 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <main style={{ backgroundColor: '#000000', minHeight: '100vh', color: 'white', overflowX: 'hidden' }}>
+    <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh', color: 'var(--text-main)', overflowX: 'hidden' }}>
       <Preloader onComplete={() => setLoading(false)} />
 
       {!loading && (
