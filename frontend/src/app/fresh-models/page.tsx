@@ -5,11 +5,26 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import styles from '@/app/page.module.css' // Reuse grid styles
 
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation'
+
 export default function FreshModels() {
+    const { user, profile, loading: authLoading } = useAuth()
+    const router = useRouter()
     const [profiles, setProfiles] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    const [profilesLoading, setProfilesLoading] = useState(true)
 
     useEffect(() => {
+        if (!authLoading) {
+            if (!user || profile?.role !== 'super_admin') {
+                router.replace('/')
+            }
+        }
+    }, [authLoading, user, profile, router])
+
+    useEffect(() => {
+        if (authLoading || !user || profile?.role !== 'super_admin') return
+
         const fetchProfiles = async () => {
             const { data, error } = await supabase
                 .from('talent_profiles')
@@ -25,13 +40,16 @@ export default function FreshModels() {
                 .limit(50)
 
             if (data) setProfiles(data)
-            setLoading(false)
+            setProfilesLoading(false)
         }
 
         fetchProfiles()
-    }, [])
+    }, [authLoading, user, profile])
 
-    if (loading) return <div className="container section">Loading Talent...</div>
+    if (authLoading) return <div className="container section">Checking Access...</div>
+    if (!user || profile?.role !== 'super_admin') return null
+
+    if (profilesLoading) return <div className="container section">Loading Talent...</div>
 
     return (
         <div className="container section">

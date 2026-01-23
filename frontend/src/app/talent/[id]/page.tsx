@@ -5,8 +5,10 @@ import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft, User, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '@/context/AuthContext'
 
 export default function TalentProfile() {
+    const { profile: authProfile } = useAuth()
     const params = useParams()
     const id = params.id as string
 
@@ -44,8 +46,12 @@ export default function TalentProfile() {
     return (
         <div className="container" style={{ paddingBottom: '80px' }}>
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-                <Link href="/fresh-models" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <ArrowLeft size={16} /> Back to Talent
+                <Link
+                    href={authProfile?.role === 'super_admin' ? "/fresh-models" : "/categories"}
+                    className="btn btn-outline"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                    <ArrowLeft size={16} /> {authProfile?.role === 'super_admin' ? 'Back to Fresh Models' : 'Back to Categories'}
                 </Link>
             </div>
 
