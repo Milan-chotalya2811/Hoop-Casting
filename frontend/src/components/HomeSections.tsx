@@ -275,8 +275,19 @@ export const WhoCanApply = () => {
                                 fill
                                 className={styles.whoCanImage}
                             />
-                            <div className={styles.highlightBox} style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)', color: 'black' }}>
-                                <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: '0.5rem' }}>Talent is Universal</h3>
+                            {/* Moving box to top (upar) and adding padding */}
+                            <div className={styles.highlightBox} style={{
+                                position: 'absolute',
+                                top: '2rem',
+                                left: '2rem',
+                                right: '2rem',
+                                padding: '2rem',
+                                backgroundColor: 'rgba(255,255,255,0.9)',
+                                backdropFilter: 'blur(10px)',
+                                color: 'black',
+                                borderRadius: '12px'
+                            }}>
+                                <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', fontWeight: 700, marginBottom: '0.5rem', color: '#1F2B5C' }}>Talent is Universal</h3>
                                 <p style={{ color: '#4b5563', fontSize: '0.9rem' }}>Age, language, city, background — no barriers.</p>
                             </div>
                         </div>

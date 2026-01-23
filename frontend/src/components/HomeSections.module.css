@@ -57,9 +57,21 @@
     position: absolute;
     inset: 0;
     background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.15;
+    opacity: 0.2;
+    /* Slightly increased for texture */
     mix-blend-mode: overlay;
     z-index: 1;
+    pointer-events: none;
+}
+
+/* Add a dark overlay on top of the hero image for better contrast */
+.heroSection::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+    z-index: 2;
+    pointer-events: none;
 }
 
 .heroContent {
