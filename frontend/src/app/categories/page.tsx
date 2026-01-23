@@ -118,7 +118,7 @@ function CategoriesContent() {
             >
                 {CATEGORY_DATA.map((cat, idx) => (
                     <motion.div key={idx} variants={item}>
-                        <Link href={`/categories?filter=${cat.name}`} className="category-card" style={{ position: 'relative', height: '250px', borderRadius: '20px', overflow: 'hidden', textDecoration: 'none', display: 'block' }}>
+                        <Link href="#" className="category-card" style={{ position: 'relative', height: '250px', borderRadius: '20px', overflow: 'hidden', textDecoration: 'none', display: 'block', cursor: 'default' }}>
                             <div style={{
                                 position: 'absolute', inset: 0,
                                 backgroundImage: `url('${cat.image}')`,
