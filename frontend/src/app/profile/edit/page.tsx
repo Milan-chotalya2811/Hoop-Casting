@@ -403,7 +403,7 @@ export default function EditProfile() {
                                             <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
                                             <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
                                             <Field name="intro_video_url" label="Your Video Profile Link" value={profile.intro_video_url} onChange={handleChange} />
-                                            <Field name="years_experience" label="Work Experience (Years)" value={profile.years_experience} onChange={handleChange} />
+                                            <Field name="years_experience" label="Work Experience (Years)" type="number" value={profile.years_experience} onChange={handleChange} />
                                         </div>
 
                                         <div style={{ marginTop: '20px' }}>
