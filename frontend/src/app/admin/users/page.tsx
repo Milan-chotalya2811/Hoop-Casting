@@ -80,8 +80,8 @@ export default function UserManagement() {
     })
 
     // Access Control check (also handled in Layout but double safety)
-    if (adminProfile?.role !== 'super_admin') {
-        return <div style={{ padding: '2rem' }}>Only Super Admins can manage user credentials.</div>
+    if (adminProfile?.role !== 'admin' && adminProfile?.role !== 'super_admin') {
+        return <div style={{ padding: '2rem' }}>Only Admins can manage user credentials.</div>
     }
 
     return (
