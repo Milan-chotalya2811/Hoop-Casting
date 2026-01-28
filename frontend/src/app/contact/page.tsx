@@ -1,12 +1,138 @@
 'use client'
-import React from 'react'
 
-export default function Page() {
+import React, { useState } from 'react'
+import api from '@/lib/api'
+import styles from '@/app/page.module.css'
+import { Mail, Phone, MapPin, Send } from 'lucide-react'
+
+export default function ContactPage() {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+    })
+    const [loading, setLoading] = useState(false)
+    const [status, setStatus] = useState<null | 'success' | 'error'>(null)
+
+    const handleChange = (e: any) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault()
+        setLoading(true)
+        setStatus(null)
+        try {
+            await api.post('/contact.php', formData)
+            setStatus('success')
+            setFormData({ name: '', email: '', subject: '', message: '' })
+        } catch (error) {
+            console.error(error)
+            setStatus('error')
+        }
+        setLoading(false)
+    }
+
     return (
         <div className="container section">
-            <div style={{ padding: '50px', textAlign: 'center', background: 'var(--surface)', borderRadius: '20px' }}>
-                <h1>Feature Update In Progress</h1>
-                <p>This section is currently being updated to the new system. Please check back later.</p>
+            <h1 className={styles.mainCategoryTitle}>Get in Touch</h1>
+            <p style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 50px auto', color: 'var(--text-muted)' }}>
+                Have questions or want to collaborate? Reach out to us directly or fill out the form below.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', alignItems: 'start' }}>
+                <div className="glass" style={{ padding: '40px', borderRadius: '16px' }}>
+                    <h3 style={{ marginBottom: '30px' }}>Contact Information</h3>
+
+                    <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', alignItems: 'center' }}>
+                        <div style={{ width: 40, height: 40, background: 'var(--surface-highlight)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Mail size={20} color="var(--primary)" />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 600 }}>Email</div>
+                            <div style={{ color: 'var(--text-muted)' }}>contact@monkeycasting.com</div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', alignItems: 'center' }}>
+                        <div style={{ width: 40, height: 40, background: 'var(--surface-highlight)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Phone size={20} color="var(--primary)" />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 600 }}>Phone</div>
+                            <div style={{ color: 'var(--text-muted)' }}>+91 98765 43210</div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <div style={{ width: 40, height: 40, background: 'var(--surface-highlight)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <MapPin size={20} color="var(--primary)" />
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 600 }}>Address</div>
+                            <div style={{ color: 'var(--text-muted)' }}>Surat, Gujarat, India</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="glass" style={{ padding: '40px', borderRadius: '16px' }}>
+                    <h3 style={{ marginBottom: '20px' }}>Send us a Message</h3>
+                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Your Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)' }}
+                                placeholder="Enter your name"
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)' }}
+                                placeholder="Enter your email"
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Subject</label>
+                            <input
+                                type="text"
+                                name="subject"
+                                value={formData.subject}
+                                onChange={handleChange}
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)' }}
+                                placeholder="Inquiry about casting..."
+                            />
+                        </div>
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Message</label>
+                            <textarea
+                                name="message"
+                                value={formData.message}
+                                onChange={handleChange}
+                                required
+                                rows={4}
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)', resize: 'vertical' }}
+                                placeholder="How can we help you?"
+                            ></textarea>
+                        </div>
+                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                            {loading ? 'Sending...' : <>Send Message <Send size={16} /></>}
+                        </button>
+                        {status === 'success' && <p style={{ color: '#10b981', marginTop: '10px' }}>Message sent successfully!</p>}
+                        {status === 'error' && <p style={{ color: '#ef4444', marginTop: '10px' }}>Failed to send message. Please try again.</p>}
+                    </form>
+                </div>
             </div>
         </div>
     )
