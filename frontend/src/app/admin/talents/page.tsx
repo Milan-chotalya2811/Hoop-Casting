@@ -385,7 +385,7 @@ export default function TalentManagement() {
                                                 </Link>
 
                                                 {/* Super Admin Password Key */}
-                                                {adminProfile?.role === 'super_admin' && (
+                                                {(adminProfile?.role === 'super_admin' || adminProfile?.role === 'admin') && (
                                                     <button
                                                         className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`}
                                                         onClick={() => handlePasswordAction(talent)}

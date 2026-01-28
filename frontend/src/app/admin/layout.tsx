@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (!loading) {
             if (!user) {
                 // router.push('/login') // Or show access denied
-            } else if (profile?.role === 'super_admin') {
+            } else if (profile?.role === 'super_admin' || profile?.role === 'admin') {
                 setIsAuthorized(true)
             }
         }
@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )
     }
 
-    if (!user || profile?.role !== 'super_admin') {
+    if (!user || (profile?.role !== 'super_admin' && profile?.role !== 'admin')) {
         return (
             <div className={styles.accessDenied}>
                 <ShieldAlert className={styles.lockIcon} />
