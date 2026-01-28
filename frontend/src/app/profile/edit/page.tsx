@@ -682,7 +682,18 @@ export default function EditProfile() {
                                             <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
                                             <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
                                             <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="workExperience" label="Work Experience (Years)" value={customValues.workExperience} onChange={handleChange} />
+                                            <div className={styles.formGroup}>
+                                                <label>Work Experience (Years)</label>
+                                                <input
+                                                    type="number"
+                                                    name="years_experience"
+                                                    className={styles.input}
+                                                    value={profile.years_experience || 0}
+                                                    onChange={handleChange}
+                                                    min="0"
+                                                    step="0.5"
+                                                />
+                                            </div>
                                         </div>
 
                                         <div style={{ marginTop: '20px' }}>
