@@ -47,7 +47,10 @@ export default function Register() {
 
         } catch (err: any) {
             console.error(err)
-            setError(err.response?.data?.message || 'Registration failed')
+            const errMsg = err.response?.data?.message || err.message || 'Registration failed';
+            const serverError = err.response?.data?.error ? JSON.stringify(err.response.data.error) : '';
+            alert(`Error: ${errMsg} \nDetails: ${serverError}`);
+            setError(errMsg)
         } finally {
             setLoading(false)
         }
