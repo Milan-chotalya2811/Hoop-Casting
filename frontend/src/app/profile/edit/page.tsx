@@ -116,7 +116,7 @@ export default function EditProfile() {
             'category', 'city', 'age', 'dob', 'whatsapp_number', 'emergency_contact',
             'bio', 'skills', 'languages', 'portfolio_links', 'past_brand_work',
             'agency_status', 'pay_rates', 'intro_video_url', 'profile_photo_url',
-            'social_links', 'content_rights_agreed',
+            'social_links', 'content_rights_agreed', 'years_experience',
             'chest_in', 'waist_in', 'hips_in', 'skin_tone', 'hair_color', 'eye_color', 'height_cm', 'weight_kg'
         ]
 
