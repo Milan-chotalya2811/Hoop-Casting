@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from '../admin.module.css'
 import { KeyRound, Search, Shield, RefreshCw, Mail } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -15,143 +15,60 @@ export default function UserManagement() {
 
     useEffect(() => {
         fetchUsers()
-
-        // Realtime Subscription for Users
-        const userChannel = supabase
-            .channel('public:users')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'users' },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        setUsers(prev => [payload.new, ...prev])
-                    } else if (payload.eventType === 'UPDATE') {
-                        setUsers(prev => prev.map(u => u.id === payload.new.id ? { ...u, ...payload.new } : u))
-                    } else if (payload.eventType === 'DELETE') {
-                        setUsers(prev => prev.filter(u => u.id !== payload.old.id))
-                    }
-                }
-            )
-            .subscribe()
-
-        // Realtime Subscription for Talent Profiles (1:1 with User)
-        const customProfileChannel = supabase
-            .channel('public:talent_profiles_linked')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'talent_profiles' },
-                (payload) => {
-                    setUsers(currentUsers => {
-                        return currentUsers.map(u => {
-                            // If this profile change belongs to this user
-                            if ((payload.new && (payload.new as any).user_id === u.id) || (payload.old && (payload.old as any).user_id === u.id)) {
-
-                                if (payload.eventType === 'DELETE') {
-                                    // Profile deleted -> linked profile is null
-                                    return { ...u, talent_profiles: null }
-                                } else {
-                                    // INSERT or UPDATE -> Update the profile object
-                                    return { ...u, talent_profiles: payload.new }
-                                }
-                            }
-                            return u
-                        })
-                    })
-                }
-            )
-            .subscribe()
-
-        return () => {
-            supabase.removeChannel(userChannel)
-            supabase.removeChannel(customProfileChannel)
-        }
     }, [])
 
     const fetchUsers = async () => {
         setLoading(true)
-        // We only get users from public.users table. 
-        // NOTE: Supabase client cannot list auth.users by default for security.
-        // We rely on the public.users table being synced.
-        const { data, error } = await supabase
-            .from('users')
-            .select(`
-                *,
-                talent_profiles (
-                    id,
-                    deleted_at,
-                    user_id
-                )
-            `)
-            .order('created_at', { ascending: false })
-
-        if (error) {
+        try {
+            const { data } = await api.get('/admin/users.php')
+            if (data) {
+                setUsers(data)
+            }
+        } catch (error) {
             console.error('Error fetching users:', error)
-        } else {
-            setUsers(data || [])
         }
         setLoading(false)
     }
 
     const setTempPassword = async (userId: string, newPass: string) => {
-        setResetting(userId)
-        try {
-            const res = await fetch('/api/admin/set-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    password: newPass,
-                    adminId: adminProfile?.id // For auditing
-                })
-            })
-
-            const data = await res.json()
-
-            if (!res.ok) throw new Error(data.error || 'Failed to set password')
-
-            alert('Temporary password set successfully. The user can now login with this password.')
-        } catch (error: any) {
-            alert('Error: ' + error.message)
-            console.error(error)
-        } finally {
-            setResetting(null)
-        }
+        alert("Not implemented in PHP version yet.")
     }
 
     const sendPasswordReset = async (email: string, userId: string) => {
-        if (!confirm(`Are you sure you want to send a password reset email to ${email}?`)) return
+        alert("Not implemented in PHP version yet.")
+        // if (!confirm(`Are you sure you want to send a password reset email to ${email}?`)) return
 
-        setResetting(userId)
-        try {
-            // Use explicitly defined site URL if available, otherwise fallback to current origin
-            // This ensures if Admin is on localhost but wants to send live link (unlikely but possible), they can set env var.
-            // But mostly it ensures that if they ARE on live, it uses live.
-            // Users often test on localhost and complain it sends localhost links. 
-            // I will force it to use the window origin which IS the correct behavior for 99% of cases, 
-            // but I'll add a check for a production override if they want to hardcode it in .env.
-            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+        // setResetting(userId)
+        // try {
+        //     // Use explicitly defined site URL if available, otherwise fallback to current origin
+        //     // This ensures if Admin is on localhost but wants to send live link (unlikely but possible), they can set env var.
+        //     // But mostly it ensures that if they ARE on live, it uses live.
+        //     // Users often test on localhost and complain it sends localhost links. 
+        //     // I will force it to use the window origin which IS the correct behavior for 99% of cases, 
+        //     // but I'll add a check for a production override if they want to hardcode it in .env.
+        //     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
 
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${siteUrl}/reset-password`,
-            })
+        //     const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        //         redirectTo: `${siteUrl}/reset-password`,
+        //     })
 
-            if (error) throw error
+        //     if (error) throw error
 
-            alert(`Password reset email sent to ${email}`)
+        //     alert(`Password reset email sent to ${email}`)
 
-            // Log manually since this is client side
-            await supabase.from('admin_logs').insert({
-                admin_id: adminProfile?.id,
-                target_user_id: userId,
-                action_type: 'password_reset_link',
-                details: 'Admin sent reset link via Client SDK'
-            })
+        //     // Log manually since this is client side
+        //     await supabase.from('admin_logs').insert({
+        //         admin_id: adminProfile?.id,
+        //         target_user_id: userId,
+        //         action_type: 'password_reset_link',
+        //         details: 'Admin sent reset link via Client SDK'
+        //     })
 
-        } catch (error: any) {
-            alert('Error sending reset email: ' + error.message)
-        } finally {
-            setResetting(null)
-        }
+        // } catch (error: any) {
+        //     alert('Error sending reset email: ' + error.message)
+        // } finally {
+        //     setResetting(null)
+        // }
     }
 
     // Client-side search

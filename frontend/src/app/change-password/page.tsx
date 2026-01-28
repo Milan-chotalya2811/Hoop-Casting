@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from '@/components/Form.module.css'
 import { Lock, Save } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -35,30 +35,10 @@ export default function ChangePassword() {
         setLoading(true)
 
         try {
-            // 1. Re-authenticate to verify old password (optional but requested)
-            // Actually supabase.auth.updateUser doesn't strictly require old password if logged in,
-            // BUT for 'Change Password' specifically with 'Old Password' field, we should verify it.
-            // Supabase client SDK doesn't have a direct "verify password" without signing in.
-            // So we try signing in with the current email + old password.
-            if (user?.email) {
-                const { error: signInError } = await supabase.auth.signInWithPassword({
-                    email: user.email,
-                    password: oldPassword
-                })
-                if (signInError) throw new Error('Incorrect old password')
-            }
-
-            // 2. Update Password
-            const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
-            if (updateError) throw updateError
-
-            // 3. Clear must_change_password flag
-            if (user) {
-                await supabase
-                    .from('users')
-                    .update({ must_change_password: false })
-                    .eq('id', user.id)
-            }
+            await api.post('/change-password.php', {
+                old_password: oldPassword,
+                new_password: newPassword
+            })
 
             setMessage('Password changed successfully! You can now continue.')
 
@@ -68,7 +48,7 @@ export default function ChangePassword() {
             }, 1500)
 
         } catch (err: any) {
-            setError(err.message)
+            setError(err.response?.data?.message || err.message)
         } finally {
             setLoading(false)
         }

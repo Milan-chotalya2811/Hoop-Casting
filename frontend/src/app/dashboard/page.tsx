@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css' // Reusing some card styles
 import { UserCircle, Edit, Shield, Lock } from 'lucide-react'
@@ -22,44 +22,20 @@ export default function Dashboard() {
         if (user) {
             // Fetch Talent Profile if exists
             const fetchTalentProfile = async () => {
-                const { data } = await supabase
-                    .from('talent_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single()
-
-                // STRICT RESET: If deleted_at is set, we treat it as NO PROFILE
-                if (data && !data.deleted_at) {
-                    setTalentProfile(data)
-                } else {
+                try {
+                    const { data } = await api.get('/profile.php')
+                    // STRICT RESET: If deleted_at is set, we treat it as NO PROFILE
+                    if (data && data.category && !data.deleted_at) {
+                        setTalentProfile(data)
+                    } else {
+                        setTalentProfile(null)
+                    }
+                } catch (e) {
                     setTalentProfile(null)
                 }
                 setFetching(false)
             }
             fetchTalentProfile()
-
-            // Real-time subscription for deletion events
-            const channel = supabase
-                .channel('public:talent_profiles')
-                .on(
-                    'postgres_changes',
-                    { event: '*', schema: 'public', table: 'talent_profiles', filter: `user_id=eq.${user.id}` },
-                    (payload) => {
-                        console.log('Profile changed:', payload)
-                        if (payload.eventType === 'DELETE' || (payload.eventType === 'UPDATE' && payload.new.deleted_at)) {
-                            setTalentProfile(null)
-                        } else if (payload.eventType === 'UPDATE' && !payload.new.deleted_at) {
-                            setTalentProfile(payload.new)
-                        } else if (payload.eventType === 'INSERT') {
-                            setTalentProfile(payload.new)
-                        }
-                    }
-                )
-                .subscribe()
-
-            return () => {
-                supabase.removeChannel(channel)
-            }
         }
     }, [user, loading, router])
 

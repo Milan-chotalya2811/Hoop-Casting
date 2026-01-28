@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+// import { supabase } from '@/lib/supabaseClient'
 import styles from '@/components/Form.module.css'
 import { Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -112,109 +112,12 @@ export default function CreateTalent() {
     }
 
     const handleFileUpload = async (e: any, fieldName: string, isCustom = false) => {
-        const file = e.target.files[0]
-        if (!file || !user) return
-
-        try {
-            setSubmitting(true)
-            const fileExt = file.name.split('.').pop()
-            const fileName = `${user.id}/${fieldName}_${Math.random()}.${fileExt}`
-
-            const { error: uploadError } = await supabase.storage
-                .from('talent-media')
-                .upload(fileName, file)
-
-            if (uploadError) throw uploadError
-
-            const { data } = supabase.storage.from('talent-media').getPublicUrl(fileName)
-
-            if (isCustom) {
-                setCustomValues(prev => ({ ...prev, [fieldName]: data.publicUrl }))
-            } else {
-                setFormData({ ...formData, [fieldName]: data.publicUrl })
-            }
-            setMessage('File uploaded successfully!')
-        } catch (error: any) {
-            console.error('Upload error:', error)
-            setMessage('Upload failed: ' + error.message)
-        } finally {
-            setSubmitting(false)
-        }
+        alert("File upload disabled in PHP migration V1.")
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setSubmitting(true)
-        setMessage('')
-
-        try {
-            if (!formData.category) throw new Error("Please select a category")
-            // Admin can bypass content rights if needed, but better to keep it
-            // if (!formData.content_rights_agreed) throw new Error("Please agree to content rights")
-
-            const languagesArray = typeof formData.languages === 'string' ? formData.languages.split(',').map((s: string) => s.trim()).filter(Boolean) : []
-            const skillsArray = typeof formData.skills === 'string' ? formData.skills.split(',').map((s: string) => s.trim()).filter(Boolean) : []
-            const portfolioArray = typeof formData.portfolio_links === 'string' ? formData.portfolio_links.split('\n').map((s: string) => s.trim()).filter(Boolean) : []
-
-            const payload = {
-                // Admin specific fields mixed in? 
-                // No, internal_* are separate columns on talent_profiles usually or mapped to users?
-                // The current schema uses internal_name/email for non-user profiles.
-                internal_name: formData.internal_name,
-                internal_email: formData.internal_email,
-                internal_mobile: formData.internal_mobile,
-
-                city: formData.city,
-                category: formData.category,
-                whatsapp_number: formData.whatsapp_number,
-                emergency_contact: formData.emergency_contact,
-                bio: formData.bio,
-                past_brand_work: formData.past_brand_work,
-                agency_status: formData.agency_status,
-                pay_rates: formData.pay_rates,
-                travel_surat: formData.travel_surat === 'Yes',
-                content_rights_agreed: formData.content_rights_agreed,
-
-                age: formData.age ? parseInt(formData.age) : null,
-                dob: formData.dob || null,
-                skills: skillsArray,
-                languages: languagesArray,
-                portfolio_links: portfolioArray,
-
-                profile_photo_url: formData.profile_photo_url,
-                intro_video_url: formData.intro_video_url,
-                social_links: formData.social_links || customValues.socialProfile,
-
-                height_cm: formData.height_cm ? parseFloat(formData.height_cm) : null,
-                weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
-                chest_in: formData.chest_in ? parseFloat(formData.chest_in) : null,
-                waist_in: formData.waist_in ? parseFloat(formData.waist_in) : null,
-                hips_in: formData.hips_in ? parseFloat(formData.hips_in) : null,
-                skin_tone: formData.skin_tone,
-                hair_color: formData.hair_color,
-                eye_color: formData.eye_color,
-
-                is_hidden: true, // Auto hide new admin entries until reviewed/active
-                custom_fields: customValues
-            }
-
-            // Sync certain Custom fields 
-            if (customValues.socialProfile) payload.social_links = customValues.socialProfile
-            if (customValues.videoProfile) payload.intro_video_url = customValues.videoProfile
-
-            const { error } = await supabase
-                .from('talent_profiles')
-                .insert([payload])
-
-            if (error) throw error
-
-            setMessage('Talent profile created successfully!')
-            setTimeout(() => router.push('/admin/talents'), 1500)
-        } catch (error: any) {
-            setMessage('Error creating profile: ' + error.message)
-        } finally {
-            setSubmitting(false)
-        }
+        alert("Manual talent creation is disabled in PHP migration V1. Please register via the public registration page.")
     }
 
     const selectedCategory = formData.category

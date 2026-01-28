@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from './admin.module.css'
 import { Users, EyeOff, Trash2, FilePlus } from 'lucide-react'
 import Link from 'next/link'
@@ -19,34 +19,14 @@ export default function AdminDashboard() {
     }, [])
 
     const fetchStats = async () => {
-        // Count all profiles
-        const { count: total, error: err1 } = await supabase
-            .from('talent_profiles')
-            .select('*', { count: 'exact', head: true })
-
-        // Count hidden
-        const { count: hidden, error: err2 } = await supabase
-            .from('talent_profiles')
-            .select('*', { count: 'exact', head: true })
-            .eq('is_hidden', true)
-
-        // Count deleted (soft delete needs explicit filter if RLS allows viewing them, 
-        // effectively checking deleted_at IS NOT NULL)
-        const { count: deleted, error: err3 } = await supabase
-            .from('talent_profiles')
-            .select('*', { count: 'exact', head: true })
-            .not('deleted_at', 'is', null)
-
-        if (!err1 && total !== null) {
-            setStats({
-                total: total,
-                active: (total - (hidden || 0) - (deleted || 0)), // Approx calculation
-                hidden: hidden || 0,
-                deleted: deleted || 0
-            })
+        try {
+            const { data } = await api.get('/admin/stats.php')
+            if (data) {
+                setStats(data)
+            }
+        } catch (e) {
+            console.error('Stats Error:', e)
         }
-
-        if (err1) console.error('Stats Error:', err1)
     }
 
     return (
@@ -114,13 +94,19 @@ function RecentTalentsTable() {
 
     useEffect(() => {
         const fetchRecent = async () => {
-            const { data } = await supabase
-                .from('talent_profiles')
-                .select(`id, created_at, category, is_hidden, users (name, email)`)
-                .order('created_at', { ascending: false })
-                .limit(5)
-
-            if (data) setRecent(data)
+            try {
+                const { data } = await api.get('/admin/talents.php?limit=5')
+                if (data) {
+                    const mapped = data.map((t: any) => ({
+                        ...t,
+                        users: {
+                            name: t.name,
+                            email: t.email
+                        }
+                    }))
+                    setRecent(mapped)
+                }
+            } catch (e) { console.error(e) }
             setLoading(false)
         }
         fetchRecent()

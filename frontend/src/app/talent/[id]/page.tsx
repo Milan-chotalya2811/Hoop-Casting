@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import { ArrowLeft, User, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/context/AuthContext'
@@ -17,19 +17,25 @@ export default function TalentProfile() {
     useEffect(() => {
         if (id) {
             const fetchData = async () => {
-                const { data, error } = await supabase
-                    .from('talent_profiles')
-                    .select(`
-                        *,
-                        users (
-                          name,
-                          email
-                        )
-                    `)
-                    .eq('id', id)
-                    .single()
-
-                if (data) setProfile(data)
+                try {
+                    const { data } = await api.get(`/profile.php?id=${id}`)
+                    if (data) {
+                        // Parse JSON fields
+                        ['languages', 'skills', 'portfolio_links', 'custom_fields', 'social_links', 'gallery_urls'].forEach(field => {
+                            if (data[field] && typeof data[field] === 'string') {
+                                try {
+                                    data[field] = JSON.parse(data[field])
+                                } catch (e) {
+                                    // Keep as string if parse fails (maybe comma separated?)
+                                }
+                            }
+                        })
+                        setProfile(data)
+                    }
+                } catch (error) {
+                    console.error("Error fetching profile", error)
+                    setProfile(null)
+                }
                 setLoading(false)
             }
             fetchData()

@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from '@/app/page.module.css'
 import { ArrowLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -35,14 +35,22 @@ function CategoriesContent() {
         if (filter) {
             const fetchProfiles = async () => {
                 setLoading(true)
-                const { data } = await supabase
-                    .from('talent_profiles')
-                    .select('*, users(name)')
-                    .eq('is_hidden', false)
-                    .is('deleted_at', null)
-                    .ilike('category', `%${filter}%`)
-
-                setProfiles(data || [])
+                try {
+                    const { data } = await api.get(`/talents.php?category=${filter}`)
+                    if (data) {
+                        // Map flat structure (name) to nested structure (users.name) expected by component or just use flat?
+                        // Component uses: p.users?.name
+                        // My API returns: name directly.
+                        // Let's normalize it.
+                        const mapped = data.map((t: any) => ({
+                            ...t,
+                            users: { name: t.name }
+                        }))
+                        setProfiles(mapped)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
                 setLoading(false)
             }
             fetchProfiles()

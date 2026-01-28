@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import { ArrowLeft, User, MapPin, Edit, Shield } from 'lucide-react'
 import Link from 'next/link'
 
@@ -22,16 +22,19 @@ export default function MyProfile() {
             }
 
             const fetchMyProfile = async () => {
-                const { data, error } = await supabase
-                    .from('talent_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single()
-
-                if (data) {
-                    setProfile(data)
-                } else {
-                    // IF NO PROFILE -> Redirect to Edit (Create) Form
+                try {
+                    const { data } = await api.get('/profile.php')
+                    if (data && data.category) {
+                        setProfile(data)
+                        // If custom fields are JSON string
+                        if (data.custom_fields && typeof data.custom_fields === 'string') {
+                            try { data.custom_fields = JSON.parse(data.custom_fields) } catch (e) { }
+                        }
+                    } else {
+                        // IF NO PROFILE -> Redirect to Edit (Create) Form
+                        router.push('/profile/edit')
+                    }
+                } catch (e) {
                     router.push('/profile/edit')
                 }
                 setFetching(false)
@@ -55,7 +58,7 @@ export default function MyProfile() {
     }
 
     const age = profile.dob ? new Date().getFullYear() - new Date(profile.dob).getFullYear() : (profile.age || 'N/A')
-    const displayName = authProfile?.name || user?.user_metadata?.full_name || 'Talent'
+    const displayName = authProfile?.name || user?.name || 'Talent'
 
     // Helper to check if physical stats exist
     const hasPhysicalStats = profile.height_cm || profile.weight_kg || profile.hair_color || profile.eye_color || profile.skin_tone || profile.chest_in || profile.waist_in || profile.hips_in

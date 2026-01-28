@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from '../admin.module.css'
 import { Eye, EyeOff, Trash2, Search, Edit, ExternalLink, RefreshCw, FilePlus, KeyRound, Mail, Filter, X } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
@@ -46,36 +46,23 @@ export default function TalentManagement() {
 
     const fetchTalents = async () => {
         setLoading(true)
-        // Use left join (users) instead of inner join to include admin-created orphan profiles
-        // IMPORTANT: Admin query must load ALL users, ignoring RLS if possible or assuming admin has view_all
-        let query = supabase
-            .from('talent_profiles')
-            .select(`
-                *,
-                users (
-                    id,
-                    name,
-                    email,
-                    mobile
-                )
-            `)
-            .order('created_at', { ascending: false })
-
-        if (filter === 'hidden') {
-            query = query.eq('is_hidden', true).is('deleted_at', null)
-        } else if (filter === 'deleted') {
-            query = query.not('deleted_at', 'is', null)
-        } else {
-            // Default: Show non-deleted.
-            query = query.is('deleted_at', null)
-        }
-
-        const { data, error } = await query
-
-        if (error) {
+        try {
+            const { data } = await api.get('/admin/talents.php')
+            if (data) {
+                // Map flat structure Back to nested structure for compatibility
+                const mapped = data.map((t: any) => ({
+                    ...t,
+                    users: {
+                        name: t.name,
+                        email: t.email,
+                        mobile: t.mobile,
+                        id: t.user_id
+                    }
+                }))
+                setTalents(mapped)
+            }
+        } catch (error) {
             console.error('Error fetching talents:', error)
-        } else {
-            setTalents(data || [])
         }
         setLoading(false)
     }
@@ -89,29 +76,21 @@ export default function TalentManagement() {
             return true;
         }))
 
-        const { error } = await supabase
-            .from('talent_profiles')
-            .update({ is_hidden: !currentStatus })
-            .eq('id', id)
-
-        if (error) {
+        try {
+            await api.post('/admin/talent_action.php', { action: 'toggle_hidden', id })
+        } catch (e) {
             alert('Error updating status')
-            fetchTalents() // Revert on error
+            fetchTalents()
         }
     }
 
     const softDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this profile? It will be moved to the Deleted bin.')) return
 
-        // Instant UI Removal
         setTalents(current => current.filter(t => t.id !== id))
-
-        const { error } = await supabase
-            .from('talent_profiles')
-            .update({ deleted_at: new Date().toISOString() })
-            .eq('id', id)
-
-        if (error) {
+        try {
+            await api.post('/admin/talent_action.php', { action: 'delete', id })
+        } catch (e) {
             alert('Error deleting profile')
             fetchTalents()
         }
@@ -120,17 +99,12 @@ export default function TalentManagement() {
     const restore = async (id: string) => {
         if (!confirm('Restore this profile? It will become active again.')) return
 
-        // Instant UI Removal from Deleted list
         if (filter === 'deleted') {
             setTalents(current => current.filter(t => t.id !== id))
         }
-
-        const { error } = await supabase
-            .from('talent_profiles')
-            .update({ deleted_at: null })
-            .eq('id', id)
-
-        if (error) {
+        try {
+            await api.post('/admin/talent_action.php', { action: 'restore', id })
+        } catch (e) {
             alert('Error restoring profile')
             fetchTalents()
         }
@@ -177,26 +151,27 @@ export default function TalentManagement() {
     }
 
     const sendPasswordReset = async (email: string, userId: string) => {
-        setResetting(userId)
-        try {
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`,
-            })
+        alert("Password reset not implemented in PHP version yet.")
+        // setResetting(userId)
+        // try {
+        //     const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        //         redirectTo: `${window.location.origin}/reset-password`,
+        //     })
 
-            if (error) throw error
-            alert(`Password reset email sent to ${email}`)
+        //     if (error) throw error
+        //     alert(`Password reset email sent to ${email}`)
 
-            await supabase.from('admin_logs').insert({
-                admin_id: adminProfile?.id,
-                target_user_id: userId,
-                action_type: 'password_reset_link',
-                details: 'Admin sent reset link via Client SDK'
-            })
-        } catch (error: any) {
-            alert('Error sending reset email: ' + error.message)
-        } finally {
-            setResetting(null)
-        }
+        //     await supabase.from('admin_logs').insert({
+        //         admin_id: adminProfile?.id,
+        //         target_user_id: userId,
+        //         action_type: 'password_reset_link',
+        //         details: 'Admin sent reset link via Client SDK'
+        //     })
+        // } catch (error: any) {
+        //     alert('Error sending reset email: ' + error.message)
+        // } finally {
+        //     setResetting(null)
+        // }
     }
 
 

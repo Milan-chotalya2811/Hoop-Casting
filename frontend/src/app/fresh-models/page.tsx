@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 import styles from '@/app/page.module.css' // Reuse grid styles
 
 export default function FreshModels() {
@@ -11,23 +11,20 @@ export default function FreshModels() {
 
     useEffect(() => {
         const fetchProfiles = async () => {
-            const { data, error } = await supabase
-                .from('talent_profiles')
-                .select(`
-          *,
-          users (
-            name
-          )
-        `)
-                .order('created_at', { ascending: false })
-                .eq('is_hidden', false)
-                .is('deleted_at', null)
-                .limit(50)
-
-            if (data) setProfiles(data)
+            try {
+                const { data } = await api.get('/talents.php?limit=50')
+                if (data) {
+                    const mapped = data.map((t: any) => ({
+                        ...t,
+                        users: { name: t.name }
+                    }))
+                    setProfiles(mapped)
+                }
+            } catch (e) {
+                console.error(e)
+            }
             setLoading(false)
         }
-
         fetchProfiles()
     }, [])
 

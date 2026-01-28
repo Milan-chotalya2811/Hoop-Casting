@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { supabase } from '@/lib/supabaseClient'
+import api, { uploadFile } from '@/lib/api'
 import styles from '@/components/Form.module.css'
 import { Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -75,13 +75,9 @@ export default function EditProfile() {
     useEffect(() => {
         if (user) {
             const loadData = async () => {
-                const { data, error } = await supabase
-                    .from('talent_profiles')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single()
+                const { data } = await api.get('/profile.php')
 
-                if (data) {
+                if (data && data.category) { // Check if we actually got a profile, not just user info
                     // Populate Profile State (Columns)
                     setProfile({
                         ...data,
@@ -94,8 +90,13 @@ export default function EditProfile() {
                     })
 
                     // Populate Custom Values
+                    // If custom_fields saved as JSON string in DB, parse it.
                     if (data.custom_fields) {
-                        setCustomValues(data.custom_fields)
+                        try {
+                            setCustomValues(typeof data.custom_fields === 'string' ? JSON.parse(data.custom_fields) : data.custom_fields)
+                        } catch (e) {
+                            setCustomValues({})
+                        }
                     }
                 }
             }
@@ -158,7 +159,6 @@ export default function EditProfile() {
             if (fieldName === 'profile_photo_url') {
                 setMessage('Detecting face and optimizing image...')
                 try {
-                    // Dynamic import to avoid SSR issues if any, though regular import is fine in client component
                     const { cropToFace } = await import('@/utils/faceCrop')
                     const croppedBlob = await cropToFace(file)
                     fileToUpload = new File([croppedBlob], file.name, { type: file.type })
@@ -169,20 +169,23 @@ export default function EditProfile() {
                 }
             }
 
-            const fileExt = fileToUpload.name.split('.').pop()
-            const fileName = `${user!.id}/${Date.now()}_${fieldName}.${fileExt}`
+            const response = await uploadFile(fileToUpload)
 
-            // Use upsert true to overwrite if same name, though timestamp prevents it usually.
-            const { error: uploadError } = await supabase.storage.from('talent-media').upload(fileName, fileToUpload, {
-                cacheControl: '3600',
-                upsert: false
-            })
-            if (uploadError) throw uploadError
+            // Construct full URL if response is relative
+            // Assuming BACKEND is same host as API but without /api
+            // Ideally we need an env var for ASSET_URL. 
+            // For now, let's use the API_BASE_URL logic or just store what is returned if it's full path.
+            // If upload.php returns "/uploads/file.jpg", we need to prepend the domain.
+            // Let's assume standard PHP setup: http://localhost/php_backend/uploads/...
 
-            const { data } = supabase.storage.from('talent-media').getPublicUrl(fileName)
-
-            // Force a cache-busting param if we want immediate update visibility even if URL is same (it won't be due to timestamp)
-            const publicUrl = data.publicUrl
+            let publicUrl = response.url
+            if (publicUrl.startsWith('/')) {
+                // HACK: Hardcoded for localhost testing, user should configure this.
+                // If API path is http://localhost/php_backend/api, then root is http://localhost/php_backend
+                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/php_backend/api';
+                const root = apiBase.replace('/api', '');
+                publicUrl = root + publicUrl;
+            }
 
             if (isCustom) {
                 setCustomValues(prev => ({ ...prev, [fieldName]: publicUrl }))
@@ -193,7 +196,7 @@ export default function EditProfile() {
             setMessage('File uploaded successfully')
         } catch (err: any) {
             console.error(err)
-            setMessage('Upload error: ' + err.message)
+            setMessage('Upload error: ' + (err.response?.data?.message || err.message))
         } finally {
             setSubmitting(false)
         }
@@ -209,9 +212,13 @@ export default function EditProfile() {
             if (!profile.content_rights_agreed) throw new Error("Please agree to the content rights.")
 
             // Prepare Payload
+            // Data to send to PHP API
+            // Note: DB structure in PHP uses different handling for arrays (expecting strings or handled JSON)
+            // But we can send JSON and PHP will handle it or we stringify here.
+            // My PHP profile.php expects JSON body and maps fields.
+
             const payload: any = {
-                user_id: user!.id,
-                updated_at: new Date().toISOString(),
+                // user_id is handled by token in backend
 
                 // Mapped Columns
                 city: profile.city,
@@ -223,22 +230,24 @@ export default function EditProfile() {
                 agency_status: profile.agency_status,
                 pay_rates: profile.pay_rates,
                 travel_surat: profile.travel_surat === 'Yes',
-                content_rights_agreed: profile.content_rights_agreed,
+                content_rights_agreed: profile.content_rights_agreed ? 1 : 0, // PHP boolean often tinyint
 
                 // Conversions
                 age: profile.age ? parseInt(profile.age) : null,
                 dob: profile.dob || null,
+                // PHP API expects arrays as JSON or strings? 
+                // profile.php: if (is_array($val)) $val = json_encode($val);
+                // So we can send arrays naturally.
                 skills: (profile.skills || '').split(',').map((s: string) => s.trim()).filter(Boolean),
                 languages: (profile.languages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
                 portfolio_links: (profile.portfolio_links || '').split('\n').map((s: string) => s.trim()).filter(Boolean),
 
                 // Media
                 profile_photo_url: profile.profile_photo_url,
-                intro_video_url: profile.intro_video_url, // "Video Profile Link" from map
-                social_links: profile.social_links || customValues.socialProfile, // Fallback if user filled "socialProfile" custom field
+                intro_video_url: profile.intro_video_url,
+                social_links: profile.social_links || customValues.socialProfile,
 
-                // IMPORTANT: Merge custom fields
-                // We keep existing custom values and update with new form state
+                // Custom fields
                 custom_fields: customValues
             }
 
@@ -246,7 +255,7 @@ export default function EditProfile() {
             if (customValues.socialProfile) payload.social_links = customValues.socialProfile
             if (customValues.videoProfile) payload.intro_video_url = customValues.videoProfile
 
-            // Map physical stats explicitly just in case
+            // Map physical stats
             payload.height_cm = profile.height_cm ? parseFloat(profile.height_cm) : null
             payload.weight_kg = profile.weight_kg ? parseFloat(profile.weight_kg) : null
             payload.chest_in = profile.chest_in ? parseFloat(profile.chest_in) : null
@@ -256,11 +265,7 @@ export default function EditProfile() {
             payload.hair_color = profile.hair_color
             payload.eye_color = profile.eye_color
 
-            const { error } = await supabase
-                .from('talent_profiles')
-                .upsert(payload, { onConflict: 'user_id' })
-
-            if (error) throw error
+            await api.post('/profile.php', payload)
 
             setMessage('Profile updated successfully!')
             // Optional: Redirect
@@ -342,7 +347,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -448,7 +453,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -537,7 +542,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -627,7 +632,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -719,7 +724,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -809,7 +814,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -899,7 +904,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -990,7 +995,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
@@ -1083,7 +1088,7 @@ export default function EditProfile() {
                                             </div>
                                             <div className={styles.formGroup}>
                                                 <label>Full Name</label>
-                                                <input type="text" value={user.user_metadata?.full_name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
+                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
                                             <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />

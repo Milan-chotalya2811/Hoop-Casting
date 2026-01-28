@@ -4,12 +4,14 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 
 function LoginContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const registered = searchParams.get('registered')
+    const { refreshAuth } = useAuth()
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -29,36 +31,18 @@ function LoginContent() {
         setLoading(true)
 
         try {
-            let emailToLogin = formData.identifier
-            const isEmail = formData.identifier.includes('@')
-
-            // If identifier is NOT an email (assume mobile), look up email
-            if (!isEmail) {
-                const { data, error: dbError } = await supabase
-                    .from('users')
-                    .select('email')
-                    .eq('mobile', formData.identifier)
-                    .single()
-
-                if (dbError || !data) {
-                    throw new Error("Mobile number not found. Please register.")
-                }
-                emailToLogin = data.email
-            }
-
-            // Login with Email/Password
-            const { error: authError } = await supabase.auth.signInWithPassword({
-                email: emailToLogin,
+            const { data } = await api.post('/login.php', {
+                mobile: formData.identifier,
                 password: formData.password
             })
 
-            if (authError) throw authError
-
-            // Redirect
+            localStorage.setItem('token', data.token)
+            await refreshAuth()
             router.push('/dashboard')
 
         } catch (err: any) {
-            setError(err.message || 'Login failed')
+            console.error(err)
+            setError(err.response?.data?.message || 'Login failed')
         } finally {
             setLoading(false)
         }

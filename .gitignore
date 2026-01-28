@@ -37,3 +37,5 @@ next-env.d.ts
 
 # Zip files
 *.zip
+
+php_backend/config/database.php

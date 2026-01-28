@@ -1,11 +1,10 @@
-
 'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css'
-import { supabase } from '@/lib/supabaseClient'
+import api from '@/lib/api'
 
 export default function Register() {
     const router = useRouter()
@@ -36,43 +35,19 @@ export default function Register() {
         }
 
         try {
-            // 1. Sign up with Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            await api.post('/register.php', {
+                name: formData.fullName,
+                mobile: formData.mobile,
                 email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.fullName, // Meta data
-                    }
-                }
+                password: formData.password
             })
 
-            if (authError) throw authError
-
-            if (authData.user) {
-                // 2. Insert into public.users table
-                // Use upsert to handle cases where a database trigger creates the row first
-                const { error: dbError } = await supabase
-                    .from('users')
-                    .upsert({
-                        id: authData.user.id,
-                        name: formData.fullName,
-                        email: formData.email,
-                        mobile: formData.mobile,
-                        role: 'user'
-                    })
-
-                if (dbError) {
-                    console.error("Database error:", dbError)
-                    throw new Error("Account created but profile setup failed. Please contact support.")
-                }
-
-                // Success -> Redirect to Login
-                router.push('/login?registered=true')
-            }
+            // Success -> Redirect to Login
+            router.push('/login?registered=true')
 
         } catch (err: any) {
-            setError(err.message || 'Registration failed')
+            console.error(err)
+            setError(err.response?.data?.message || 'Registration failed')
         } finally {
             setLoading(false)
         }
