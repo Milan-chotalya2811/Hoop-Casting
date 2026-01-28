@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Change this to your PHP backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/php_backend/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -27,7 +27,7 @@ api.interceptors.request.use(
 export const uploadFile = async (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await axios.post(`${API_BASE_URL}/upload.php`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
