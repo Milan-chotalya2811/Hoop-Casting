@@ -1,6 +1,6 @@
 <?php
-include_once '../config/database.php';
-include_once '../utils/auth.php';
+include_once dirname(__DIR__) . '/config/database.php';
+include_once dirname(__DIR__) . '/utils/auth.php';
 
 $database = new Database();
 $db = $database->getConnection();

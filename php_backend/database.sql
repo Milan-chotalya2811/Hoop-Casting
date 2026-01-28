@@ -27,6 +27,10 @@ CREATE TABLE IF NOT EXISTS talent_profiles (
     city VARCHAR(100),
     state VARCHAR(100),
     country VARCHAR(100) DEFAULT 'India',
+    whatsapp_number VARCHAR(20),
+    emergency_contact VARCHAR(20),
+    age INT,
+    bio TEXT,
     
     -- Physical Details
     height_cm DECIMAL(5,2),
@@ -44,19 +48,29 @@ CREATE TABLE IF NOT EXISTS talent_profiles (
     languages TEXT, -- Checkbox comma separated
     skills TEXT, -- Checkbox comma separated
     past_work TEXT,
+    past_brand_work TEXT,
+    agency_status VARCHAR(100),
+    pay_rates VARCHAR(255),
     portfolio_links TEXT, -- JSON or comma separated URLs
     
     -- Availability
     interested_in TEXT,
     willing_to_travel TINYINT(1) DEFAULT 0,
+    travel_surat TINYINT(1) DEFAULT 0,
+    content_rights_agreed TINYINT(1) DEFAULT 0,
     
     -- Media (Paths stored in local uploads folder)
     profile_photo_url VARCHAR(255),
     gallery_urls TEXT, -- JSON array of file paths
     intro_video_url VARCHAR(255),
+    social_links VARCHAR(255),
+    
+    -- Custom Fields
+    custom_fields TEXT, -- JSON string
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

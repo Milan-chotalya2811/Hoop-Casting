@@ -1,5 +1,5 @@
 <?php
-include_once '../config/database.php';
+include_once dirname(__DIR__) . '/config/database.php';
 
 $database = new Database();
 $db = $database->getConnection();
@@ -40,23 +40,28 @@ if (
     $stmt->bindParam(":password_hash", $password_hash);
     $stmt->bindParam(":api_token", $api_token);
 
-    if ($stmt->execute()) {
-        $user_id = $db->lastInsertId();
-        http_response_code(201);
-        echo json_encode([
-            "message" => "User registered successfully.",
-            "token" => $api_token,
-            "user" => [
-                "id" => $user_id,
-                "name" => $data->name,
-                "mobile" => $data->mobile,
-                "email" => $email,
-                "role" => "user"
-            ]
-        ]);
-    } else {
+    try {
+        if ($stmt->execute()) {
+            $user_id = $db->lastInsertId();
+            http_response_code(201);
+            echo json_encode([
+                "message" => "User registered successfully.",
+                "token" => $api_token,
+                "user" => [
+                    "id" => $user_id,
+                    "name" => $data->name,
+                    "mobile" => $data->mobile,
+                    "email" => $email,
+                    "role" => "user"
+                ]
+            ]);
+        } else {
+            http_response_code(503);
+            echo json_encode(["message" => "Unable to register user.", "error" => $stmt->errorInfo()]);
+        }
+    } catch (PDOException $e) {
         http_response_code(503);
-        echo json_encode(["message" => "Unable to register user."]);
+        echo json_encode(["message" => "Database error: " . $e->getMessage()]);
     }
 } else {
     http_response_code(400);

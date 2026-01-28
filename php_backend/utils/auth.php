@@ -1,12 +1,30 @@
 <?php
 function authenticate($db)
 {
+    // Fallback for apache_request_headers() if it doesn't exist
+    if (!function_exists('apache_request_headers')) {
+        function apache_request_headers()
+        {
+            $headers = array();
+            foreach ($_SERVER as $key => $value) {
+                if (substr($key, 0, 5) == 'HTTP_') {
+                    $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
+                    $headers[$header] = $value;
+                }
+            }
+            return $headers;
+        }
+    }
+
     $headers = apache_request_headers();
     $token = "";
 
-    if (isset($headers['Authorization'])) {
+    // Check both Authorization and authorization (case sensitivity)
+    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : (isset($headers['authorization']) ? $headers['authorization'] : null);
+
+    if ($authHeader) {
         $matches = array();
-        preg_match('/Bearer\s(\S+)/', $headers['Authorization'], $matches);
+        preg_match('/Bearer\s(\S+)/', $authHeader, $matches);
         if (isset($matches[1])) {
             $token = $matches[1];
         }

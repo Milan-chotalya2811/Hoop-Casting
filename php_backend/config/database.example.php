@@ -5,9 +5,9 @@
 class Database
 {
     private $host = "localhost";
-    private $db_name = "your_db_name";
-    private $username = "your_db_user";
-    private $password = "your_db_password";
+    private $db_name = "u172519708_hoop_casting26";
+    private $username = "u172519708_Milanchotaliya";
+    private $password = "Mayur@Monkey2023";
     public $conn;
 
     public function getConnection()
