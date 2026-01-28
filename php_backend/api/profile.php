@@ -19,7 +19,7 @@ if ($method == 'GET') {
         // Fetch My Profile (Authenticated)
         $user = authenticate($db);
         $user_id = $user['id'];
-        $query = "SELECT t.*, u.name, u.mobile, u.email FROM talent_profiles t JOIN users u ON t.user_id = u.id WHERE t.user_id = :user_id LIMIT 1";
+        $query = "SELECT t.*, u.name, u.mobile, u.email FROM talent_profiles t JOIN users u ON t.user_id = u.id WHERE t.user_id = :user_id AND t.deleted_at IS NULL LIMIT 1";
         $stmt = $db->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
     }
@@ -107,7 +107,7 @@ if ($method == 'GET') {
 
     $sql = "INSERT INTO talent_profiles (" . implode(', ', $insert_cols) . ") 
             VALUES (" . implode(', ', $insert_vals) . ") 
-            ON DUPLICATE KEY UPDATE " . implode(', ', $update_parts);
+            ON DUPLICATE KEY UPDATE deleted_at = NULL, " . implode(', ', $update_parts);
 
     $stmt = $db->prepare($sql);
 
