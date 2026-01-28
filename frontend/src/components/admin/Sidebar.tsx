@@ -19,7 +19,6 @@ export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarPr
         { href: '/admin/talents', label: 'Talent Management', icon: Users },
         { href: '/admin/users', label: 'Registered Users', icon: KeyRound },
         { href: '/admin/forms', label: 'Form Builder', icon: FileText },
-        { href: '/admin/feedback', label: 'Video Feedback', icon: MessageSquare },
         { href: '/admin/contact', label: 'Contact Form', icon: Mail },
         // { href: '/admin/settings', label: 'Settings', icon: Settings },
     ]

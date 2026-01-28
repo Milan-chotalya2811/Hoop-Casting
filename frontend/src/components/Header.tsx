@@ -23,7 +23,6 @@ const Header = () => {
             <Link href="/about" className={`${styles.navLink} ${isActive('/about')}`}>About Us</Link>
             <Link href="/categories" className={`${styles.navLink} ${isActive('/categories')}`}>Categories</Link>
             <Link href="/fresh-models" className={`${styles.navLink} ${isActive('/fresh-models')}`}>Fresh Models</Link>
-            <Link href="/feedback" className={`${styles.navLink} ${isActive('/feedback')}`}>Feedback</Link>
             <Link href="/contact" className={`${styles.navLink} ${isActive('/contact')}`}>Contact</Link>
         </>
     )

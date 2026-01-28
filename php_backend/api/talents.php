@@ -16,7 +16,7 @@ if ($method == 'GET') {
     $query = "SELECT t.id, t.user_id, t.category, t.city, t.state, t.profile_photo_url, t.years_experience, u.name 
               FROM talent_profiles t 
               JOIN users u ON t.user_id = u.id 
-              WHERE t.deleted_at IS NULL AND t.is_hidden = 0";
+              WHERE t.deleted_at IS NULL";
 
     if ($category) {
         $query .= " AND t.category LIKE :category";
