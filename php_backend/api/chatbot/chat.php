@@ -96,7 +96,8 @@ if (isset($openai_api_key) && !empty($openai_api_key)) {
             $bot_response = $response_data['choices'][0]['message']['content'];
         } else {
             // Fallback if API usage limit or other error
-            $bot_response = "Sorry, I am having trouble connecting to the brain right now.";
+            $error_message = isset($response_data['error']['message']) ? $response_data['error']['message'] : json_encode($response_data);
+            $bot_response = "⚠️ OpenAI Error: " . $error_message;
         }
     }
     curl_close($ch);
