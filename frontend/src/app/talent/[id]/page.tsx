@@ -154,6 +154,29 @@ export default function TalentProfile() {
                         </div>
                     )}
 
+                    {/* Gallery Section */}
+                    {profile.gallery_urls && profile.gallery_urls.length > 0 && (
+                        <div className="glass" style={{ padding: '30px', borderRadius: '16px', marginBottom: '30px' }}>
+                            <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Gallery</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
+                                {profile.gallery_urls.map((url: string, i: number) => (
+                                    <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => window.open(url, '_blank')}>
+                                        {url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                                <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
+                                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                                    <span style={{ fontSize: '2rem', color: '#fff' }}>▶</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <img src={url} alt={`Gallery ${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {profile.portfolio_links && profile.portfolio_links.length > 0 && (
                         <div className="glass" style={{ padding: '30px', borderRadius: '16px' }}>
                             <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Portfolio</h3>
