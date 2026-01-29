@@ -8,14 +8,17 @@ import { Mail, Clock, RefreshCw } from 'lucide-react'
 export default function ContactMessages() {
     const [messages, setMessages] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
     const fetchMessages = async () => {
         setLoading(true)
+        setError(null)
         try {
             const { data } = await api.get('/admin/contacts.php')
             setMessages(data)
-        } catch (error) {
-            console.error(error)
+        } catch (err: any) {
+            console.error(err)
+            setError(err.response?.data?.message || err.message || 'Failed to fetch messages')
         }
         setLoading(false)
     }
@@ -64,6 +67,12 @@ export default function ContactMessages() {
             <div className={styles.tableContainer} style={{ overflowX: 'auto' }}>
                 {loading ? (
                     <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>
+                ) : error ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
+                        <p style={{ fontWeight: 600 }}>Error loading messages:</p>
+                        <p>{error}</p>
+                        {error.includes('404') && <p style={{ marginTop: '10px', fontSize: '0.9rem', color: '#6b7280' }}>The backend file might be missing.</p>}
+                    </div>
                 ) : messages.length === 0 ? (
                     <div style={{ padding: '2rem', textAlign: 'center' }}>No messages found.</div>
                 ) : (
