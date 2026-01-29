@@ -66,7 +66,7 @@ export default function Footer() {
                 </div>
 
                 <div className={styles.bottomBar}>
-                    <p>&copy; {new Date().getFullYear()} Monkey Casting. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Hoop Casting. All rights reserved.</p>
                     <div style={{ display: 'flex', gap: '20px' }}>
                         <span>Designed by Monkeyads</span>
                     </div>

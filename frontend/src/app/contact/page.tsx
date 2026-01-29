@@ -5,10 +5,19 @@ import api from '@/lib/api'
 import styles from '@/app/page.module.css'
 import { Mail, Phone, MapPin, Send } from 'lucide-react'
 
+// Define categories (can be imported if shared, but copying for now)
+const CATEGORIES = [
+    "Actor", "Anchor", "Model", "Makeup Artist", "Stylist",
+    "Art Direction", "Photographer", "Videographer", "Video Editor",
+    "Internship", "Props Renting", "Studio Renting", "Set Designer", "Other"
+];
+
 export default function ContactPage() {
     const [formData, setFormData] = useState({
         name: '',
+        mobile: '',
         email: '',
+        category: '',
         subject: '',
         message: ''
     })
@@ -16,17 +25,30 @@ export default function ContactPage() {
     const [status, setStatus] = useState<null | 'success' | 'error'>(null)
 
     const handleChange = (e: any) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value })
+        const { name, value } = e.target;
+        if (name === 'mobile') {
+            const numericValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+            setFormData({ ...formData, [name]: numericValue });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     }
 
     const handleSubmit = async (e: any) => {
         e.preventDefault()
         setLoading(true)
         setStatus(null)
+
+        if (formData.mobile.length !== 10) {
+            alert("Mobile number must be exactly 10 digits.");
+            setLoading(false);
+            return;
+        }
+
         try {
             await api.post('/contact.php', formData)
             setStatus('success')
-            setFormData({ name: '', email: '', subject: '', message: '' })
+            setFormData({ name: '', mobile: '', email: '', category: '', subject: '', message: '' })
         } catch (error) {
             console.error(error)
             setStatus('error')
@@ -103,6 +125,22 @@ export default function ContactPage() {
                                 placeholder="Enter your name"
                             />
                         </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Mobile Number</label>
+                            <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                required
+                                pattern="[0-9]{10}"
+                                maxLength={10}
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)' }}
+                                placeholder="10-digit mobile number"
+                            />
+                        </div>
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Email Address</label>
                             <input
@@ -115,6 +153,23 @@ export default function ContactPage() {
                                 placeholder="Enter your email"
                             />
                         </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Category</label>
+                            <select
+                                name="category"
+                                value={formData.category}
+                                onChange={handleChange}
+                                required
+                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--background)', color: 'var(--text-main)' }}
+                            >
+                                <option value="" disabled>Select a Category</option>
+                                {CATEGORIES.map(cat => (
+                                    <option key={cat} value={cat}>{cat}</option>
+                                ))}
+                            </select>
+                        </div>
+
                         <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Subject</label>
                             <input
