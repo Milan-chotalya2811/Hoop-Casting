@@ -97,7 +97,7 @@ export default function MyProfile() {
                             <img
                                 src={profile.profile_photo_url || 'https://via.placeholder.com/400x500?text=No+Photo'}
                                 alt="Profile"
-                                style={{ width: '100%', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', objectFit: 'cover', aspectRatio: '3/4' }}
+                                style={{ width: '100%', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', objectFit: 'cover', objectPosition: 'top', aspectRatio: '3/4' }}
                             />
                         </div>
 

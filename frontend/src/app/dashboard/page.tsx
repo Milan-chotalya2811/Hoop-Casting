@@ -56,7 +56,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                         <div style={{ padding: '2px', background: 'var(--surface)', borderRadius: '50%', flexShrink: 0, width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                             {talentProfile?.profile_photo_url ? (
-                                <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                                <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} />
                             ) : (
                                 <UserCircle size={40} color="var(--primary)" />
                             )}
@@ -113,7 +113,7 @@ export default function Dashboard() {
                                 </div>
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
                                     {talentProfile.profile_photo_url ? (
-                                        <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }} />
+                                        <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top' }} />
                                     ) : (
                                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <UserCircle size={30} />

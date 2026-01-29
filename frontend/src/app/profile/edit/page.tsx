@@ -525,7 +525,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -616,7 +616,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -722,7 +722,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -826,7 +826,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -917,7 +917,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -1008,7 +1008,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -1100,7 +1100,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -1194,7 +1194,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
@@ -1283,7 +1283,7 @@ export default function EditProfile() {
                                         <div className={styles.formGroup}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                                                 {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover' }} alt="Profile" />
+                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
                                                 ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
                                                 <div>
                                                     <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />

@@ -65,7 +65,7 @@ export default function TalentProfile() {
                         <img
                             src={profile.profile_photo_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1000&auto=format&fit=crop'}
                             alt="Profile"
-                            style={{ width: '100%', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', objectFit: 'cover', aspectRatio: '3/4' }}
+                            style={{ width: '100%', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '20px', objectFit: 'cover', objectPosition: 'top', aspectRatio: '3/4' }}
                         />
 
                         <div className="glass" style={{ padding: '20px', borderRadius: '16px' }}>

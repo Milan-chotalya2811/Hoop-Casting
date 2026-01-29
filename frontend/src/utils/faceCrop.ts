@@ -90,7 +90,13 @@ export const cropToFace = async (imageFile: File): Promise<Blob> => {
             const minDim = Math.min(img.width, img.height);
             cropSize = minDim;
             cropX = (img.width - minDim) / 2;
-            cropY = (img.height - minDim) / 2;
+
+            // If portrait (taller than wide), prioritize top area where face usually is.
+            if (img.height > img.width) {
+                cropY = 0; // Top aligned
+            } else {
+                cropY = (img.height - minDim) / 2; // Center aligned
+            }
         }
 
         // 5. Draw to Canvas
