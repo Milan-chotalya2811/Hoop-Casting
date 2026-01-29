@@ -7,12 +7,14 @@ import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { ArrowLeft, User, MapPin, Edit, Shield } from 'lucide-react'
 import Link from 'next/link'
+import GalleryModal from '@/components/GalleryModal'
 
 export default function MyProfile() {
     const { user, profile: authProfile, loading } = useAuth()
     const router = useRouter()
     const [profile, setProfile] = useState<any>(null)
     const [fetching, setFetching] = useState(true)
+    const [modalUrl, setModalUrl] = useState<string | null>(null)
 
     useEffect(() => {
         if (!loading) {
@@ -238,7 +240,8 @@ export default function MyProfile() {
                             <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Gallery</h3>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '15px' }}>
                                 {profile.gallery_urls.map((url: string, i: number) => (
-                                    <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => window.open(url, '_blank')}>
+                                    <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--border)' }} onClick={() => setModalUrl(url)}>
+                                        {/* Thumbnail Logic */}
                                         {url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
                                             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                                 <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
@@ -254,6 +257,8 @@ export default function MyProfile() {
                             </div>
                         </div>
                     )}
+
+                    <GalleryModal isOpen={!!modalUrl} url={modalUrl} onClose={() => setModalUrl(null)} />
 
                     {/* Social & Portfolio */}
                     {(

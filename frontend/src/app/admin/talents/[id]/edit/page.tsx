@@ -6,6 +6,7 @@ import api from '@/lib/api'
 import { ArrowLeft, User, MapPin, Mail, Phone } from 'lucide-react'
 import Link from 'next/link'
 import styles from '../../../admin.module.css'
+import GalleryModal from '@/components/GalleryModal'
 
 export default function EditTalent() {
     const params = useParams()
@@ -14,6 +15,7 @@ export default function EditTalent() {
 
     const [profile, setProfile] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [modalUrl, setModalUrl] = useState<string | null>(null)
 
     useEffect(() => {
         if (id) {
@@ -93,7 +95,7 @@ export default function EditTalent() {
                         <h3 style={{ marginBottom: '15px', fontSize: '1.2rem', color: '#1f295c' }}>Gallery</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '15px' }}>
                             {profile.gallery_urls.map((url: string, i: number) => (
-                                <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: '1px solid #ddd', background: '#000' }} onClick={() => window.open(url, '_blank')}>
+                                <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', border: '1px solid #ddd', background: '#000' }} onClick={() => setModalUrl(url)}>
                                     {url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
                                         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                                             <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
@@ -113,6 +115,8 @@ export default function EditTalent() {
                         No gallery items uploaded.
                     </div>
                 )}
+
+                <GalleryModal isOpen={!!modalUrl} url={modalUrl} onClose={() => setModalUrl(null)} />
 
                 {/* Main Details Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '30px' }}>
