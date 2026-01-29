@@ -305,18 +305,17 @@ export default function TalentManagement() {
                                 <th>Category</th>
                                 <th>Location</th>
                                 <th>Status</th>
-                                <th>Experience</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>Loading...</td>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>Loading...</td>
                                 </tr>
                             ) : filteredTalents.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No profiles found.</td>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No profiles found.</td>
                                 </tr>
                             ) : (
                                 filteredTalents.map((talent) => (
@@ -342,7 +341,6 @@ export default function TalentManagement() {
                                                 <span className={`${styles.badge} ${styles.badgeActive}`}>Active</span>
                                             )}
                                         </td>
-                                        <td>{talent.years_experience} Years</td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                 {/* Contact Actions */}
