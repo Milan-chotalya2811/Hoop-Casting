@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   description: "Connect with the best talent in the industry.",
 };
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -38,21 +40,25 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
         </AuthProvider>
-        {/* Chatbot Integration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.HOOP_CHAT_OPTIONS = {
-                chatEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/chat.php',
-                historyEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/get_history.php',
-                logoUrl: '/logo.png',
-                title: 'Hoop Casting Assistant',
-                primaryColor: '#ff4757'
-              };
-            `,
-          }}
+
+        {/* Chatbot Configuration */}
+        <Script id="chatbot-config" strategy="beforeInteractive">
+          {`
+            window.HOOP_CHAT_OPTIONS = {
+              chatEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/chat.php',
+              historyEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/get_history.php',
+              logoUrl: '/logo.png',
+              title: 'Hoop Casting Assistant',
+              primaryColor: '#ff4757'
+            };
+          `}
+        </Script>
+
+        {/* Chatbot Loader */}
+        <Script
+          src="/chatbot/chatbot-loader.js"
+          strategy="lazyOnload"
         />
-        <script src="/chatbot/chatbot-loader.js" defer></script>
       </body>
     </html>
   );
