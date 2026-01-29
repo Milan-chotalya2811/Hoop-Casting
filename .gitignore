@@ -40,3 +40,10 @@ next-env.d.ts
 
 php_backend/config/database.php
 php_backend/api/chatbot/secrets.php
+
+
+# gitignore
+
+.env
+.env.local
+.env.production

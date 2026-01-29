@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
+import "./chatbot.css";
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -31,9 +32,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="stylesheet" href="/chatbot/chatbot-style.css" />
-      </head>
       <body className={`${outfit.variable} ${inter.variable}`}>
         <AuthProvider>
           <Header />
@@ -56,8 +54,8 @@ export default function RootLayout({
 
         {/* Chatbot Loader */}
         <Script
-          src="/chatbot/chatbot-loader.js"
-          strategy="lazyOnload"
+          src="/chatbot/chatbot-loader.js?v=2"
+          strategy="afterInteractive"
         />
       </body>
     </html>
