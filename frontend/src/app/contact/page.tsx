@@ -48,13 +48,27 @@ export default function ContactPage() {
         }
 
         try {
-            await api.post('/contact.php', formData)
+            // Use local Next.js API route as proxy to avoid CORS
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Something went wrong');
+            }
+
             setStatus('success')
             setFormData({ name: '', mobile: '', email: '', category: '', subject: '', message: '' })
         } catch (error: any) {
             console.error(error)
             setStatus('error')
-            setErrorMessage(error.response?.data?.message || error.message || "Failed to send message.")
+            setErrorMessage(error.message || "Failed to send message.")
         }
         setLoading(false)
     }
