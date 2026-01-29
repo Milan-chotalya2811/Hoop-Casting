@@ -25,11 +25,17 @@ export default function MyProfile() {
                 try {
                     const { data } = await api.get('/profile.php')
                     if (data && data.category) {
+                        // Parse JSON fields
+                        ['languages', 'skills', 'portfolio_links', 'custom_fields', 'social_links', 'gallery_urls'].forEach((field: string) => {
+                            if (data[field] && typeof data[field] === 'string') {
+                                try {
+                                    data[field] = JSON.parse(data[field])
+                                } catch (e) {
+                                    // Keep as string if parse fails
+                                }
+                            }
+                        })
                         setProfile(data)
-                        // If custom fields are JSON string
-                        if (data.custom_fields && typeof data.custom_fields === 'string') {
-                            try { data.custom_fields = JSON.parse(data.custom_fields) } catch (e) { }
-                        }
                     } else {
                         // IF NO PROFILE -> Redirect to Edit (Create) Form
                         router.push('/profile/edit')
