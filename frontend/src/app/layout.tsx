@@ -29,12 +29,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="/chatbot/chatbot-style.css" />
+      </head>
       <body className={`${outfit.variable} ${inter.variable}`}>
         <AuthProvider>
           <Header />
           <main>{children}</main>
           <Footer />
         </AuthProvider>
+        {/* Chatbot Integration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.HOOP_CHAT_OPTIONS = {
+                chatEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/chat.php',
+                historyEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/get_history.php',
+                logoUrl: '/logo.png',
+                title: 'Hoop Casting Assistant',
+                primaryColor: '#ff4757'
+              };
+            `,
+          }}
+        />
+        <script src="/chatbot/chatbot-loader.js" defer></script>
       </body>
     </html>
   );
