@@ -63,6 +63,7 @@ export default function EditProfile() {
 
         // Legacy/Specific Columns that might still be used
         profile_photo_url: '',
+        gallery_urls: [] as string[],
         intro_video_url: '',
         social_links: '', // "Personal Instagram"
 
@@ -87,6 +88,7 @@ export default function EditProfile() {
                         travel_surat: data.travel_surat ? 'Yes' : 'No', // Convert bool to Yes/No for select
                         // Ensure defaults
                         category: data.category || '',
+                        gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : (data.gallery_urls ? JSON.parse(data.gallery_urls) : [])
                     })
 
                     // Populate Custom Values
@@ -122,7 +124,7 @@ export default function EditProfile() {
             'category', 'city', 'age', 'dob', 'whatsapp_number', 'emergency_contact',
             'bio', 'skills', 'languages', 'portfolio_links', 'past_brand_work',
             'agency_status', 'pay_rates', 'intro_video_url', 'profile_photo_url',
-            'social_links', 'content_rights_agreed', 'years_experience',
+            'social_links', 'content_rights_agreed', 'years_experience', 'gallery_urls',
             'chest_in', 'waist_in', 'hips_in', 'skin_tone', 'hair_color', 'eye_color', 'height_cm', 'weight_kg'
         ]
 
@@ -208,6 +210,75 @@ export default function EditProfile() {
         }
     }
 
+    const handleGalleryUpload = async (e: any) => {
+        const file = e.target.files[0]
+        if (!file) return
+
+        try {
+            setSubmitting(true)
+            setMessage('Uploading gallery item...')
+
+            const response = await uploadFile(file)
+
+            let publicUrl = response.url
+            if (publicUrl.startsWith('/')) {
+                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/php_backend/api';
+                const root = apiBase.replace('/api', '');
+                publicUrl = root + publicUrl;
+            }
+
+            setProfile((prev: any) => ({
+                ...prev,
+                gallery_urls: [...(prev.gallery_urls || []), publicUrl]
+            }))
+
+            setMessage('Item added to gallery')
+        } catch (err: any) {
+            console.error(err)
+            setMessage('Upload error: ' + (err.response?.data?.message || err.message))
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const removeGalleryItem = (index: number) => {
+        setProfile((prev: any) => ({
+            ...prev,
+            gallery_urls: prev.gallery_urls.filter((_: any, i: number) => i !== index)
+        }))
+    }
+
+    const GallerySection = () => (
+        <>
+            <SectionTitle title="Gallery (Photos & Videos)" />
+            <div className={styles.formGroup}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px', marginBottom: '15px' }}>
+                    {profile.gallery_urls && profile.gallery_urls.map((url: string, i: number) => (
+                        <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', background: '#000' }}>
+                            {url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                                <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Gallery Item" />
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => removeGalleryItem(i)}
+                                style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,0.5)', color: '#fff', borderRadius: '50%', width: 24, height: 24, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                    ))}
+                    <div style={{ aspectRatio: '1', border: '2px dashed #ccc', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', background: 'var(--surface)' }}>
+                        <span style={{ fontSize: '2rem', color: 'var(--primary)' }}>+</span>
+                        <input type="file" onChange={handleGalleryUpload} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} accept="image/*,video/*" />
+                    </div>
+                </div>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Upload photos and videos to showcase your work.</p>
+            </div>
+        </>
+    )
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSubmitting(true)
@@ -250,6 +321,7 @@ export default function EditProfile() {
 
                 // Media
                 profile_photo_url: profile.profile_photo_url,
+                gallery_urls: profile.gallery_urls || [],
                 intro_video_url: profile.intro_video_url,
                 social_links: profile.social_links || customValues.socialProfile,
 
@@ -441,6 +513,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
 
                                         <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
                                             <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
@@ -530,6 +603,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
 
                                         <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
                                             <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
@@ -635,6 +709,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -738,6 +813,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -828,6 +904,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -918,6 +995,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -1009,6 +1087,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -1102,6 +1181,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
@@ -1190,6 +1270,7 @@ export default function EditProfile() {
                                                 </div>
                                             </div>
                                         </div>
+                                        <GallerySection />
                                     </>
                                 )}
 
