@@ -35,12 +35,17 @@ if ($method == 'POST') {
         $stmt->bindParam(":subject", $data->subject);
         $stmt->bindParam(":message", $final_message);
 
-        if ($stmt->execute()) {
-            http_response_code(201);
-            echo json_encode(["message" => "Message sent successfully."]);
-        } else {
-            http_response_code(503);
-            echo json_encode(["message" => "Unable to send message."]);
+        try {
+            if ($stmt->execute()) {
+                http_response_code(201);
+                echo json_encode(["message" => "Message sent successfully."]);
+            } else {
+                http_response_code(503);
+                echo json_encode(["message" => "Unable to send message.", "error" => $stmt->errorInfo()]);
+            }
+        } catch (PDOException $e) {
+            http_response_code(500);
+            echo json_encode(["message" => "Database error: " . $e->getMessage()]);
         }
     } else {
         http_response_code(400);

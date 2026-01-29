@@ -23,6 +23,7 @@ export default function ContactPage() {
     })
     const [loading, setLoading] = useState(false)
     const [status, setStatus] = useState<null | 'success' | 'error'>(null)
+    const [errorMessage, setErrorMessage] = useState<string>('')
 
     const handleChange = (e: any) => {
         const { name, value } = e.target;
@@ -38,6 +39,7 @@ export default function ContactPage() {
         e.preventDefault()
         setLoading(true)
         setStatus(null)
+        setErrorMessage('')
 
         if (formData.mobile.length !== 10) {
             alert("Mobile number must be exactly 10 digits.");
@@ -49,9 +51,10 @@ export default function ContactPage() {
             await api.post('/contact.php', formData)
             setStatus('success')
             setFormData({ name: '', mobile: '', email: '', category: '', subject: '', message: '' })
-        } catch (error) {
+        } catch (error: any) {
             console.error(error)
             setStatus('error')
+            setErrorMessage(error.response?.data?.message || error.message || "Failed to send message.")
         }
         setLoading(false)
     }
@@ -197,7 +200,7 @@ export default function ContactPage() {
                             {loading ? 'Sending...' : <>Send Message <Send size={16} /></>}
                         </button>
                         {status === 'success' && <p style={{ color: '#10b981', marginTop: '10px' }}>Message sent successfully!</p>}
-                        {status === 'error' && <p style={{ color: '#ef4444', marginTop: '10px' }}>Failed to send message. Please try again.</p>}
+                        {status === 'error' && <p style={{ color: '#ef4444', marginTop: '10px' }}>{errorMessage || 'Failed to send message. Please try again.'}</p>}
                     </form>
                 </div>
             </div>
