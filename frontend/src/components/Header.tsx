@@ -103,7 +103,6 @@ const Header = () => {
                     <Link href="/about" className={`${styles.navLink} ${isActive('/about')}`} onClick={() => setMobileMenuOpen(false)}>About Us</Link>
                     <Link href="/categories" className={`${styles.navLink} ${isActive('/categories')}`} onClick={() => setMobileMenuOpen(false)}>Categories</Link>
                     <Link href="/fresh-models" className={`${styles.navLink} ${isActive('/fresh-models')}`} onClick={() => setMobileMenuOpen(false)}>Fresh Models</Link>
-                    <Link href="/feedback" className={`${styles.navLink} ${isActive('/feedback')}`} onClick={() => setMobileMenuOpen(false)}>Feedback</Link>
                     <Link href="/contact" className={`${styles.navLink} ${isActive('/contact')}`} onClick={() => setMobileMenuOpen(false)}>Contact</Link>
                 </div>
             )}
