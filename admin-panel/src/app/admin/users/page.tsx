@@ -44,7 +44,7 @@ export default function UserManagement() {
                     setUsers(currentUsers => {
                         return currentUsers.map(u => {
                             // If this profile change belongs to this user
-                            if ((payload.new && payload.new.user_id === u.id) || (payload.old && payload.old.user_id === u.id)) {
+                            if ((payload.new && (payload.new as any).user_id === u.id) || (payload.old && (payload.old as any).user_id === u.id)) {
 
                                 if (payload.eventType === 'DELETE') {
                                     // Profile deleted -> linked profile is null

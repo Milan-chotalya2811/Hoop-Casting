@@ -10,6 +10,8 @@
         "dev": "npm run dev --workspace=frontend",
         "dev:admin": "npm run dev --workspace=admin-panel -- -p 3001",
         "build": "npm run build --workspaces",
+        "start": "npm start --workspace=frontend",
+        "start:admin": "npm start --workspace=admin-panel -- -p 3001",
         "lint": "npm run lint --workspaces"
     }
 }

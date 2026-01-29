@@ -106,7 +106,13 @@ export default function EditProfile() {
 
     // Unified Change Handler
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target
+        const { name, type } = e.target
+        let { value } = e.target
+
+        // Validation for WhatsApp Number (10 digits only)
+        if (name === 'whatsapp_number') {
+            value = value.replace(/[^0-9]/g, '').slice(0, 10);
+        }
 
         // Define which fields map to ACTUAL Columns in talent_profiles
         // Note: 'height', 'weight' from Reg form are often text (5'10), but DB might have numeric height_cm. 
@@ -349,7 +355,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -466,7 +472,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -555,7 +561,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -645,7 +651,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -748,7 +754,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -838,7 +844,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -928,7 +934,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -1019,7 +1025,7 @@ export default function EditProfile() {
                                                 <label>Full Name</label>
                                                 <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
                                             </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
+                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
                                             <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
                                         </div>
 
@@ -1233,14 +1239,14 @@ function SectionTitle({ title }: { title: string }) {
     }}>{title}</h3>
 }
 
-function Field({ label, name, value, onChange, type = "text", placeholder, required, fullWidth }: any) {
+function Field({ label, name, value, onChange, type = "text", placeholder, required, fullWidth, ...props }: any) {
     return (
         <div className={styles.formGroup} style={fullWidth ? { gridColumn: '1 / -1' } : {}}>
             <label>{label}</label>
             {type === 'textarea' ? (
-                <textarea className={styles.textarea} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} rows={4} required={required} />
+                <textarea className={styles.textarea} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} rows={4} required={required} {...props} />
             ) : (
-                <input className={styles.input} type={type} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} required={required} />
+                <input className={styles.input} type={type} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} required={required} {...props} />
             )}
         </div>
     )

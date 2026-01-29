@@ -11,6 +11,12 @@ if (
     !empty($data->mobile) &&
     !empty($data->password)
 ) {
+    // Validate Mobile Number
+    if (!preg_match('/^[0-9]{10}$/', $data->mobile)) {
+        http_response_code(400);
+        echo json_encode(["message" => "Mobile number must be exactly 10 digits."]);
+        exit();
+    }
     // Check if mobile or email exists
     $checkQuery = "SELECT id FROM users WHERE mobile = :mobile OR email = :email LIMIT 1";
     $stmt = $db->prepare($checkQuery);

@@ -82,6 +82,15 @@ if ($method == 'GET') {
     $params[':user_id'] = $user['id'];
 
     foreach ($fields as $field) {
+        // Validate WhatsApp Number
+        if ($field === 'whatsapp_number' && isset($data[$field]) && !empty($data[$field])) {
+            if (!preg_match('/^[0-9]{10}$/', $data[$field])) {
+                http_response_code(400);
+                echo json_encode(["message" => "WhatsApp number must be exactly 10 digits."]);
+                exit();
+            }
+        }
+
         if (isset($data[$field])) {
             $val = $data[$field];
             if (is_array($val)) {

@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css'
 import { supabase } from '@/lib/supabaseClient'
 
-export default function Login() {
+function LoginContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const registered = searchParams.get('registered')
@@ -113,5 +113,13 @@ export default function Login() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function Login() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginContent />
+        </Suspense>
     )
 }

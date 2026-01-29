@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
@@ -14,7 +14,7 @@ const ALL_CATEGORIES = [
     "Set Designer", "Other"
 ]
 
-export default function Categories() {
+function CategoriesContent() {
     const searchParams = useSearchParams()
     const filter = searchParams.get('filter')
     const [profiles, setProfiles] = useState<any[]>([])
@@ -29,10 +29,7 @@ export default function Categories() {
                     .select('*, users(name)')
                     .eq('is_hidden', false)
                     .is('deleted_at', null)
-                    .ilike('category', `%${filter}%`) // Partial match for things like "Stylist" matching "Stylist (Food)" if stored that way? 
-                // Actually prompt says "Stylist (Food / Fashion...)" so better to use strict match or loose.
-                // Stored as "Stylist" in my dropdown, but user prompt had subcats. 
-                // My dropdown in EditProfile only had "Stylist". I'll use ilike to be safe.
+                    .ilike('category', `%${filter}%`)
 
                 setProfiles(data || [])
                 setLoading(false)
@@ -94,5 +91,13 @@ export default function Categories() {
                 ))}
             </div>
         </div>
+    )
+}
+
+export default function Categories() {
+    return (
+        <Suspense fallback={<div>Loading categories...</div>}>
+            <CategoriesContent />
+        </Suspense>
     )
 }

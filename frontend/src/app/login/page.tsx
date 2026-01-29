@@ -38,7 +38,7 @@ function LoginContent() {
 
             localStorage.setItem('token', data.token)
             await refreshAuth()
-            router.push('/dashboard')
+            router.push('/')
 
         } catch (err: any) {
             console.error(err)
