@@ -42,6 +42,16 @@
   display: flex;
   gap: 20px;
   justify-content: center;
+  margin-bottom: 20px; /* Add margin to bottom */
+}
+
+/* Specific fix for smaller laptops/screens */
+@media (max-width: 1400px) and (max-height: 800px) {
+  .hero {
+    height: auto;
+    min-height: 90vh;
+    padding: 100px 0;
+  }
 }
 
 .counters {
