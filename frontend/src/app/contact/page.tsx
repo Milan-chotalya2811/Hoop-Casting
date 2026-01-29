@@ -60,7 +60,8 @@ export default function ContactPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Something went wrong');
+                const errorMsg = data.details ? `Error: ${data.message} - ${data.details}` : (data.message || 'Something went wrong');
+                throw new Error(errorMsg);
             }
 
             setStatus('success')
