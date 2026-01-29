@@ -1,7 +1,12 @@
 <?php
+// Enable Error Reporting for Debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Content-Type: application/json; charset=UTF-8");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -62,7 +67,8 @@ foreach ($history as $chat) {
 }
 
 // Generate Response
-$bot_response = "I am currently in demo mode. Please configure the OpenAI API key in chat.php to enable full intelligence.";
+$bot_response = "I am currently in demo mode. Please configure the OpenAI API key in chat.php to enable full
+intelligence.";
 
 // --- OPENAI INTEGRATION START ---
 // Load credentials securely
@@ -96,14 +102,15 @@ if (isset($openai_api_key) && !empty($openai_api_key)) {
             $bot_response = $response_data['choices'][0]['message']['content'];
         } else {
             // Fallback if API usage limit or other error
-            $error_message = isset($response_data['error']['message']) ? $response_data['error']['message'] : json_encode($response_data);
+            $error_message = isset($response_data['error']['message']) ? $response_data['error']['message'] :
+                json_encode($response_data);
             $bot_response = "⚠️ OpenAI Error: " . $error_message;
         }
     }
     curl_close($ch);
 } else {
     // SIMPLE FALLBACK RESPONSE (Rule Based)
-    // You can remove this else block once OpenAI is set up.
+// You can remove this else block once OpenAI is set up.
     if (stripos($message, 'hi') !== false || stripos($message, 'hello') !== false) {
         $bot_response = "Hi! user, I am your Hoop Casting assistant. How can I help you today?";
     } else if (stripos($message, 'contact') !== false) {
