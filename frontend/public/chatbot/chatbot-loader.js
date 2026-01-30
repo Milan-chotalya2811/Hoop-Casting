@@ -3,7 +3,7 @@
     // User can override these by defining window.HOOP_CHAT_OPTIONS before loading this script
     const config = Object.assign({
         // UPDATE THESE URLS TO YOUR LIVE SERVER URLS
-        chatEndpoint: 'http://localhost/php_backend/api/chatbot/chat.php',
+        chatEndpoint: '/api/chatbot', // Updated to use Next.js API Route
         historyEndpoint: 'http://localhost/php_backend/api/chatbot/get_history.php',
         logoUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712109.png',
         title: 'Hoop Casting Assistant',
