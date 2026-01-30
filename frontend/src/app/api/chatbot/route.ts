@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import Replicate from 'replicate';
 
 const SYSTEM_INSTRUCTION = "You are the AI Assistant for Hoop Casting. Answer strictly based on the provided context. If the answer is not in the context, say 'Is information ke liye aap contact team se baat kar sakte ho.' Be polite, professional, and use Hinglish.";
 
@@ -25,39 +26,59 @@ A: Yes, basic registration is free.`;
 export async function POST(req: Request) {
     try {
         // Try to find ANY available key
-        let apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+        let apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.REPLICATE_API_TOKEN;
 
-        // Check for common misconfigurations
-        if (!apiKey) {
-            return NextResponse.json({
-                error: 'Configuration Error: No API Key found on Server. Please add OPENAI_API_KEY or GEMINI_API_KEY in Vercel Settings.'
-            }, { status: 500 });
-        }
-
+        // Parsing body
         const body = await req.json();
         const { message, session_id, history = [] } = body;
+
+        if (!apiKey) {
+            return NextResponse.json({
+                error: 'Configuration Error: No API Key found on Server.'
+            }, { status: 500 });
+        }
 
         // --- DETECT PROVIDER BASED ON KEY PREFIX ---
         const isGemini = apiKey.startsWith('AIza');
         const isOpenAI = apiKey.startsWith('sk-');
         const isReplicate = apiKey.startsWith('r8_');
 
-        if (isReplicate) {
-            return NextResponse.json({
-                error: 'Unsupported Key: You provided a Replicate API Key (starts with r8_). Please use an OpenAI Key (starts with sk-) or Gemini Key (starts with AIza).'
-            }, { status: 400 });
-        }
-
-        if (!isGemini && !isOpenAI) {
-            // Fallback or unknown key type
-            return NextResponse.json({
-                error: 'Invalid Key Format: API Key must start with "sk-" (OpenAI) or "AIza" (Gemini).'
-            }, { status: 400 });
-        }
-
         let replyText = "";
 
-        if (isOpenAI) {
+        if (isReplicate) {
+            // --- REPLICATE LOGIC (Llama 3) ---
+            const replicate = new Replicate({
+                auth: apiKey,
+            });
+
+            // Construct prompt efficiently
+            // Llama 3 prompt format: <|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{user_prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n
+
+            const prompt = `${SYSTEM_INSTRUCTION}\n\nCONTEXT:\n${CONTEXT}\n\nUser Question: ${message}`;
+
+            // Using Llama-3-70b-instruct
+            const output = await replicate.run(
+                "meta/meta-llama-3-70b-instruct",
+                {
+                    input: {
+                        prompt: prompt,
+                        system_prompt: SYSTEM_INSTRUCTION + "\nCONTEXT:\n" + CONTEXT,
+                        message: message,
+                        top_p: 0.9,
+                        temperature: 0.75,
+                        max_tokens: 500
+                    }
+                }
+            );
+
+            // Replicate output is usually an array of strings (tokens)
+            if (Array.isArray(output)) {
+                replyText = output.join("");
+            } else {
+                replyText = String(output);
+            }
+
+        } else if (isOpenAI) {
             // --- OPENAI LOGIC ---
             const messages = [
                 { role: 'system', content: SYSTEM_INSTRUCTION + "\n\nCONTEXT:\n" + CONTEXT }
@@ -112,6 +133,10 @@ export async function POST(req: Request) {
             const data = await response.json();
             if (data.error) throw new Error("Gemini: " + data.error.message);
             replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        } else {
+            return NextResponse.json({
+                error: 'Invalid Key: Key must start with sk- (OpenAI), AIza (Gemini), or r8_ (Replicate).'
+            }, { status: 400 });
         }
 
         return NextResponse.json({

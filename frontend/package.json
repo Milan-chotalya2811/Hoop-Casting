@@ -24,6 +24,7 @@
     "react-dom": "19.2.3",
     "react-icons": "^5.5.0",
     "react-intersection-observer": "^10.0.0",
+    "replicate": "^1.4.0",
     "resend": "^6.7.0",
     "three": "^0.182.0"
   },
