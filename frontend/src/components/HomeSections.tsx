@@ -170,7 +170,7 @@ export const WhatIsHoopCasting = () => {
 
                         <FadeIn delay={0.2} className="">
                             <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
-                                Hoop Casting is an open casting platform for: <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>Actors, Models, Performers, Fresh faces</span>, and Real people with real presence.
+                                Hoop Casting is an open casting platform for: <span style={{ color: 'black', fontWeight: 800 }}>Actors, Models, Performers, Fresh faces</span>, and Real people with real presence.
                             </p>
 
                             <ul className={styles.listGroup}>
@@ -225,7 +225,7 @@ export const WhyDifferent = () => {
                             className={styles.card}
                         >
                             <card.icon size={40} className={styles.highlightText} style={{ marginBottom: '1.5rem' }} />
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-main)' }}>{card.title}</h3>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#1F2B5C' }}>{card.title}</h3>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{card.desc}</p>
                         </motion.div>
                     ))}
@@ -369,7 +369,7 @@ export const CastingProcess = () => {
                                 className={`${styles.stepRow} ${idx % 2 === 0 ? styles.stepRowReverse : ''}`}
                             >
                                 <div className={styles.stepContent}>
-                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>{step.title}</h3>
+                                    <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1F2B5C', marginBottom: '0.5rem' }}>{step.title}</h3>
                                     <p style={{ color: 'var(--text-muted)' }}>{step.desc}</p>
                                 </div>
 
@@ -416,7 +416,7 @@ export const WhyTrust = () => {
                 </div>
 
                 <FadeIn>
-                    <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--text-main)' }}>We don’t chase trends. <span style={{ color: 'var(--text-muted)' }}>We build stories that last.</span></h3>
+                    <h3 style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--text-main)' }}>We don’t chase trends. <span style={{ color: '#1F2B5C' }}>We build stories that last.</span></h3>
                 </FadeIn>
             </div>
         </section>

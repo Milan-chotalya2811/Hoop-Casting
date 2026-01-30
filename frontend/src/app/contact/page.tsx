@@ -48,8 +48,9 @@ export default function ContactPage() {
         }
 
         try {
-            // Use local Next.js API route as proxy to avoid CORS
-            const response = await fetch('/api/contact', {
+            // Direct call to PHP Backend
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
+            const response = await fetch(`${apiUrl}/contact.php`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -57,7 +58,15 @@ export default function ContactPage() {
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
+            // Adjust response handling for PHP response structure
+            let data;
+            const text = await response.text();
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error("Non-JSON response:", text);
+                throw new Error("Invalid response from server");
+            }
 
             if (!response.ok) {
                 const errorMsg = data.details ? `Error: ${data.message} - ${data.details}` : (data.message || 'Something went wrong');
