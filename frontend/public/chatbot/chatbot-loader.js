@@ -128,7 +128,13 @@
                 body: JSON.stringify(payload)
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (jsonError) {
+                console.error("JSON Parse Error:", jsonError);
+                throw new Error(`Server returned ${response.status} ${response.statusText}. Check Vercel Logs.`);
+            }
 
             if (data.session_id) {
                 sessionId = data.session_id;
@@ -145,7 +151,7 @@
 
         } catch (e) {
             hideTyping();
-            appendMessage('bot', "Sorry, network error. Please try again.");
+            appendMessage('bot', "Connection Failed: " + (e.message || "Network Error"));
             console.error(e);
         }
     }

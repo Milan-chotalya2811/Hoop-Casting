@@ -56,9 +56,9 @@ export async function POST(req: Request) {
 
             const prompt = `${SYSTEM_INSTRUCTION}\n\nCONTEXT:\n${CONTEXT}\n\nUser Question: ${message}`;
 
-            // Using Llama-3-70b-instruct
+            // Using Llama-3-8b-instruct (faster response to avoid Vercel timeouts)
             const output = await replicate.run(
-                "meta/meta-llama-3-70b-instruct",
+                "meta/meta-llama-3-8b-instruct",
                 {
                     input: {
                         prompt: prompt,
