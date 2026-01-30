@@ -169,7 +169,7 @@ export const WhatIsHoopCasting = () => {
                         <SectionTitle title="Not Just Another Casting Platform." subtitle="Who We Are" align="left" />
 
                         <FadeIn delay={0.2} className="">
-                            <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '2rem' }}>
+                            <p style={{ fontSize: '1.25rem', color: 'black', lineHeight: 1.6, marginBottom: '2rem' }}>
                                 Hoop Casting is an open casting platform for: <span style={{ color: 'black', fontWeight: 800 }}>Actors, Models, Performers, Fresh faces</span>, and Real people with real presence.
                             </p>
 
