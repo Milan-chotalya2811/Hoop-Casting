@@ -23,7 +23,7 @@
     padding: 12px 32px;
 
     /* Light Transparent Glass Effect */
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     transform: translateZ(0);
