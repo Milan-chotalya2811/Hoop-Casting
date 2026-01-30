@@ -1,10 +1,9 @@
 .header {
-    position: sticky;
+    position: absolute;
     top: 0;
     z-index: 100;
     width: 100%;
     background: transparent;
-    backdrop-filter: none;
     border-bottom: none;
     height: auto;
     padding: 20px 0;
@@ -23,20 +22,20 @@
     margin: 0 auto;
     padding: 12px 32px;
 
-    /* Premium Glass Effect */
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    /* Dark Premium Glass Effect */
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05), inset 0 0 2px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
     font-family: var(--font-heading);
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary);
+    color: #ffffff;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -47,7 +46,7 @@
 }
 
 .navLink {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
     font-size: 0.95rem;
     transition: color 0.2s;
@@ -55,7 +54,7 @@
 
 .navLink:hover,
 .navLinkActive {
-    color: var(--text-main);
+    color: var(--primary);
 }
 
 .authButtons {
