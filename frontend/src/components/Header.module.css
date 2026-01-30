@@ -3,22 +3,33 @@
     top: 0;
     z-index: 100;
     width: 100%;
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    height: 80px;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    height: auto;
+    padding: 20px 0;
     display: flex;
-    align-items: center;
+    justify-content: center;
+    pointer-events: none;
 }
 
 .container {
+    pointer-events: auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
+    width: 92%;
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 24px;
+    padding: 12px 32px;
+
+    /* Premium Glass Effect */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05), inset 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .logo {
