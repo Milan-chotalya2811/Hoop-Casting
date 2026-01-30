@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
-import "./chatbot.css";
+
 import { AuthProvider } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -40,23 +40,10 @@ export default function RootLayout({
         </AuthProvider>
 
         {/* Chatbot Configuration */}
-        <Script id="chatbot-config" strategy="beforeInteractive">
-          {`
-            window.HOOP_CHAT_OPTIONS = {
-              chatEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/chat.php',
-              historyEndpoint: 'https://hoopcasting.com/php_backend/api/chatbot/get_history.php',
-              logoUrl: '/logo.png',
-              title: 'Hoop Casting Assistant',
-              primaryColor: '#ff4757'
-            };
-          `}
-        </Script>
+
 
         {/* Chatbot Loader */}
-        <Script
-          src="/chatbot/chatbot-loader.js?v=2"
-          strategy="afterInteractive"
-        />
+
       </body>
     </html>
   );
