@@ -27,18 +27,19 @@
 }
 
 /* --- Hero Section --- */
-position: relative;
-height: 100vh;
-padding-top: 120px;
-/* Added to push content down below fixed header */
-width: 100%;
-display: flex;
-align-items: center;
-justify-content: center;
-overflow: hidden;
-/* Hero stays dark/cinematic for impact */
-background-color: #000000;
-color: white;
+.heroSection {
+    position: relative;
+    height: 100vh;
+    padding-top: 120px;
+    /* Added to push content down below fixed header */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* Hero stays dark/cinematic for impact */
+    background-color: #000000;
+    color: white;
 }
 
 .bgOverlay {
