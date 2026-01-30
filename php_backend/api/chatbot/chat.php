@@ -57,6 +57,7 @@ $stmt->execute([':sess' => $session_id]);
 $history = array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
 
 // Construct Prompt for AI
+// Construct Prompt for AI
 $messages_payload = [
     ['role' => 'system', 'content' => $system_instruction . "\n\nCONTEXT:\n" . $context_content]
 ];
