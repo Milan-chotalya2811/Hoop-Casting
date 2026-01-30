@@ -27,8 +27,8 @@
   --glass-bg: rgba(255, 255, 255, 0.9);
   --glass-border: rgba(212, 175, 55, 0.2);
 
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: var(--font-montserrat), sans-serif;
+  --font-body: var(--font-montserrat), sans-serif;
 
   --radius-sm: 4px;
   --radius-md: 8px;
