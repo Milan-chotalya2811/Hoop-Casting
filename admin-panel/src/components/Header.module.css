@@ -1,0 +1,120 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    background: rgba(5, 5, 5, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.logo {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav {
+    display: flex;
+    gap: 32px;
+}
+
+.navLink {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.navLink:hover,
+.navLinkActive {
+    color: var(--text-main);
+}
+
+.authButtons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatarContainer {
+    position: relative;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface-highlight);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    width: 200px;
+    padding: 8px 0;
+    box-shadow: var(--shadow-lg);
+    display: none;
+    flex-direction: column;
+}
+
+.avatarContainer:hover .dropdown {
+    display: flex;
+}
+
+.dropdownItem {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    transition: background 0.2s;
+}
+
+.dropdownItem:hover {
+    background: var(--surface-highlight);
+    color: var(--text-main);
+}
+
+/* Mobile Menu - basic implementation */
+.mobileMenuBtn {
+    display: none;
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+@media (max-width: 768px) {
+    .nav {
+        display: none;
+    }
+
+    .mobileMenuBtn {
+        display: block;
+    }
+}
