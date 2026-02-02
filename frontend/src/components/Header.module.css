@@ -23,7 +23,7 @@
     padding: 12px 32px;
 
     /* Ultimate Dark Glass Effect */
-    background: #ffffff1a;
+    background: #ffffff80;
     -webkit-backdrop-filter: blur(5px) saturate(100%);
     backdrop-filter: blur(5px) saturate(100%);
     transform: translateZ(0);
@@ -34,7 +34,7 @@
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-/*mene khus siya he */
+/*mene khud diya he */
 
 /* .Header-module__HmnIjW__container {
     pointer-events: auto;
