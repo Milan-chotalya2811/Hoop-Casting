@@ -61,7 +61,7 @@ export const HeroSection = () => {
             {/* Background - Cinematic Image + Overlay */}
             <div className={styles.bgOverlay}>
                 <Image
-                    src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?bf=85&w=1920&auto=format&fit=crop"
+                    src="/hero_bg_outdoor.png"
                     alt="Cinematic Camera"
                     fill
                     className={styles.heroImage}
