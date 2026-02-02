@@ -86,7 +86,7 @@ export default function About() {
                             viewport={{ once: true }}
                         >
                             <Image
-                                src="/about_hero.png"
+                                src="/social_cinema_intro.png"
                                 alt="Filming set"
                                 width={600}
                                 height={400}
