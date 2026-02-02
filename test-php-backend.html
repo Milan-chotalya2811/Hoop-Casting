@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PHP Backend Test - Simple</title>
+</head>
+
+<body>
+    <h1>Test PHP Backend Connection</h1>
+
+    <h2>Step 1: Test if server is reachable</h2>
+    <button onclick="testServer()">Test Server</button>
+    <pre id="server-result"></pre>
+
+    <h2>Step 2: Test Registration</h2>
+    <button onclick="testRegister()">Test Register</button>
+    <pre id="register-result"></pre>
+
+    <script>
+        async function testServer() {
+            const result = document.getElementById('server-result');
+            result.textContent = 'Testing server...';
+
+            try {
+                // First try to just fetch the URL
+                const response = await fetch('https://hoopcasting.com/php_backend/api/me.php', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                result.textContent = `Server Response: ${response.status} ${response.statusText}\n`;
+                result.textContent += `Headers: ${JSON.stringify([...response.headers], null, 2)}`;
+                result.style.color = response.ok ? 'green' : 'orange';
+
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message + '\n';
+                result.textContent += 'This means the server is not reachable or CORS is blocking the request.';
+                result.style.color = 'red';
+            }
+        }
+
+        async function testRegister() {
+            const result = document.getElementById('register-result');
+            result.textContent = 'Testing registration...';
+
+            const testData = {
+                name: 'Test User ' + Date.now(),
+                mobile: '98765' + String(Math.floor(Math.random() * 100000)).padStart(5, '0'),
+                email: 'test' + Date.now() + '@test.com',
+                password: 'Test@1234'
+            };
+
+            result.textContent += '\nSending data: ' + JSON.stringify(testData, null, 2);
+
+            try {
+                const response = await fetch('https://hoopcasting.com/php_backend/api/register.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                result.textContent += '\n\nResponse: ' + JSON.stringify(data, null, 2);
+                result.style.color = response.ok ? 'green' : 'red';
+
+            } catch (error) {
+                result.textContent += '\n\nError: ' + error.message;
+                result.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+
+</html>
