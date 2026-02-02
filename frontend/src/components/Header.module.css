@@ -37,7 +37,7 @@
 
 /*mene khus siya he */
 
-.Header-module__HmnIjW__container {
+/* .Header-module__HmnIjW__container {
     pointer-events: auto;
     -webkit-backdrop-filter: blur(50px)saturate(120%);
     will-change: backdrop-filter;
@@ -54,7 +54,7 @@
     transform: translateZ(0);
     box-shadow: 0 10px 40px #0006;
     backdrop-filter: blur(10px);
-}
+} */
 
 .logo {
     font-family: var(--font-heading);
