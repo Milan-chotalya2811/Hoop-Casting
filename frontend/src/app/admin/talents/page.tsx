@@ -369,14 +369,14 @@ export default function TalentManagement() {
                                                 )}
 
                                                 {/* Edit */}
-                                                <Link href={`/admin/talents/${talent.id}/edit`}>
+                                                <Link href={`/admin/talents/edit?id=${talent.id}`}>
                                                     <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Edit Profile">
                                                         <Edit size={14} />
                                                     </button>
                                                 </Link>
 
                                                 {/* Preview */}
-                                                <Link href={`/talent/${talent.id}`} target="_blank">
+                                                <Link href={`/talent?id=${talent.id}`} target="_blank">
                                                     <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Preview">
                                                         <ExternalLink size={14} />
                                                     </button>

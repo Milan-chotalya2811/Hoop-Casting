@@ -1,16 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import api from '@/lib/api'
 import { ArrowLeft, User, MapPin } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '@/context/AuthContext'
 import GalleryModal from '@/components/GalleryModal'
 
-export default function TalentProfile() {
-    const params = useParams()
-    const id = params.id as string
+function TalentProfileContent() {
+    const searchParams = useSearchParams()
+    const id = searchParams.get('id')
 
     const [profile, setProfile] = useState<any>(null)
     const [loading, setLoading] = useState(true)
@@ -58,7 +57,7 @@ export default function TalentProfile() {
                 </Link>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '40px' }}>
                 {/* Left Column: Image & Contact */}
                 <div>
                     <div style={{ position: 'sticky', top: '100px' }}>
@@ -198,5 +197,13 @@ export default function TalentProfile() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function TalentProfile() {
+    return (
+        <Suspense fallback={<div className="container section">Loading...</div>}>
+            <TalentProfileContent />
+        </Suspense>
     )
 }

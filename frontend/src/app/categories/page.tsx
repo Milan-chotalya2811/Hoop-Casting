@@ -74,7 +74,7 @@ function CategoriesContent() {
                     ) : (
                         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
                             {profiles.map((p) => (
-                                <Link href={`/talent/${p.id}`} key={p.id}>
+                                <Link href={`/talent?id=${p.id}`} key={p.id}>
                                     <div className={styles.castCard} style={{ height: '400px', width: '100%', borderRadius: '16px', overflow: 'hidden' }}>
                                         <img
                                             src={p.profile_photo_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1000&auto=format&fit=crop'}

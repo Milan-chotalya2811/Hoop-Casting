@@ -144,7 +144,7 @@ function RecentTalentsTable() {
                                 )}
                             </td>
                             <td>
-                                <Link href={`/talent/${t.id}`} target="_blank" className={styles.link}>
+                                <Link href={`/talent?id=${t.id}`} target="_blank" className={styles.link}>
                                     View
                                 </Link>
                             </td>

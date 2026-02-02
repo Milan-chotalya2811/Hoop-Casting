@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import api, { uploadFile } from '@/lib/api'
 import styles from '@/components/Form.module.css'
 import { Save, ArrowLeft } from 'lucide-react'
@@ -27,9 +27,9 @@ const CATEGORIES = [
     "Set Designer"
 ]
 
-export default function AdminEditTalent() {
-    const params = useParams()
-    const id = params.id as string
+function EditForm() {
+    const searchParams = useSearchParams()
+    const id = searchParams.get('id')
     const router = useRouter()
 
     // Admin specific: We don't use useAuth for the profile data
@@ -554,6 +554,14 @@ export default function AdminEditTalent() {
                 </form>
             </div>
         </div >
+    )
+}
+
+export default function AdminEditTalent() {
+    return (
+        <Suspense fallback={<div>Loading editor...</div>}>
+            <EditForm />
+        </Suspense>
     )
 }
 

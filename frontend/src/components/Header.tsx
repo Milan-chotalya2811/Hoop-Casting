@@ -22,7 +22,7 @@ const Header = () => {
             <Link href="/" className={`${styles.navLink} ${isActive('/')}`}>Home</Link>
             <Link href="/about" className={`${styles.navLink} ${isActive('/about')}`}>About Us</Link>
             <Link href="/categories" className={`${styles.navLink} ${isActive('/categories')}`}>Categories</Link>
-            <Link href="/fresh-models" className={`${styles.navLink} ${isActive('/fresh-models')}`}>Fresh Models</Link>
+            <Link href="/talents" className={`${styles.navLink} ${isActive('/talents')}`}>Talents</Link>
             <Link href="/contact" className={`${styles.navLink} ${isActive('/contact')}`}>Contact</Link>
         </>
     )
@@ -102,7 +102,7 @@ const Header = () => {
                     <Link href="/" className={`${styles.navLink} ${isActive('/')}`} onClick={() => setMobileMenuOpen(false)}>Home</Link>
                     <Link href="/about" className={`${styles.navLink} ${isActive('/about')}`} onClick={() => setMobileMenuOpen(false)}>About Us</Link>
                     <Link href="/categories" className={`${styles.navLink} ${isActive('/categories')}`} onClick={() => setMobileMenuOpen(false)}>Categories</Link>
-                    <Link href="/fresh-models" className={`${styles.navLink} ${isActive('/fresh-models')}`} onClick={() => setMobileMenuOpen(false)}>Fresh Models</Link>
+                    <Link href="/talents" className={`${styles.navLink} ${isActive('/talents')}`} onClick={() => setMobileMenuOpen(false)}>Talents</Link>
                     <Link href="/contact" className={`${styles.navLink} ${isActive('/contact')}`} onClick={() => setMobileMenuOpen(false)}>Contact</Link>
                 </div>
             )}
