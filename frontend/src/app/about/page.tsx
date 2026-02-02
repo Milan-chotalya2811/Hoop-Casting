@@ -86,7 +86,7 @@ export default function About() {
                             viewport={{ once: true }}
                         >
                             <Image
-                                src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=1000&auto=format&fit=crop"
+                                src="/about_hero.png"
                                 alt="Filming set"
                                 width={600}
                                 height={400}
