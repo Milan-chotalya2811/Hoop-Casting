@@ -14,6 +14,8 @@ import {
   FinalCTA
 } from '@/components/HomeSections';
 
+import BlogSection from '@/components/BlogSection';
+
 export default function Home() {
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +33,7 @@ export default function Home() {
           <CastingProcess />
           <WhyTrust />
           <MessageForDreamers />
+          <BlogSection />
           <FinalCTA />
         </>
       )}
