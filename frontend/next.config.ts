@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
 
   /* config options here */
   output: 'export',
+  trailingSlash: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',

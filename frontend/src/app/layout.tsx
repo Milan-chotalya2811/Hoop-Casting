@@ -13,8 +13,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Monkey Casting - Premier Talent Management",
-  description: "Connect with the best talent in the industry.",
+  title: "Hoop Casting - Not Just Another Casting Platform",
+  description: "Hoop Casting is an open casting platform for: Actors, Models, Performers, Fresh faces, and Real people with real presence.",
 };
 
 import Script from "next/script";
