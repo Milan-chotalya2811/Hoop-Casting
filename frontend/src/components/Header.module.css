@@ -70,9 +70,9 @@
 }
 
 .navLink {
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 500;
-    font-size: 0.95rem;
+    color: #1f2b5c;
+    font-weight: 600;
+    font-size: 18px;
     transition: color 0.2s;
 }
 
