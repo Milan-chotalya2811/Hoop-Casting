@@ -155,7 +155,7 @@ export const WhatIsHoopCasting = () => {
                 <div className={styles.gridSplit}>
                     <div className={styles.visualAbstract}>
                         <Image
-                            src="/casting_call_collage.png"
+                            src="/monkey_studio_intro.png"
                             alt="Film Shooting Set"
                             fill
                             className={styles.imageCover}
