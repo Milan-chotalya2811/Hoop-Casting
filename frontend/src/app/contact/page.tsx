@@ -49,7 +49,11 @@ export default function ContactPage() {
 
         try {
             // Direct call to PHP Backend
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
+            // Use relative path if running on the domain to avoid CORS issues
+            const isLocal = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+            const baseUrl = isLocal ? 'https://hoopcasting.com' : '';
+            const apiUrl = `${baseUrl}/php_backend/api`;
+
             const response = await fetch(`${apiUrl}/contact.php`, {
                 method: 'POST',
                 headers: {
@@ -58,14 +62,16 @@ export default function ContactPage() {
                 body: JSON.stringify(formData)
             });
 
-            // Adjust response handling for PHP response structure
-            let data;
             const text = await response.text();
+            let data;
+
             try {
                 data = JSON.parse(text);
             } catch (e) {
-                console.error("Non-JSON response:", text);
-                throw new Error("Invalid response from server");
+                // Show the actual server response (truncated) to help debugging
+                const cleanText = text.replace(/<[^>]*>?/gm, ''); // Strip HTML tags for alert
+                const errorMessage = cleanText.length > 150 ? cleanText.substring(0, 150) + '...' : cleanText;
+                throw new Error(`Server Response Error: ${errorMessage || 'Unknown Error'}`);
             }
 
             if (!response.ok) {
