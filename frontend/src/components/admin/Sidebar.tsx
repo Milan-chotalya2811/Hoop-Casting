@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from '@/app/admin/admin.module.css'
-import { LayoutDashboard, Users, FileText, Settings, LogOut, KeyRound, MessageSquare, Mail } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, Settings, LogOut, KeyRound, MessageSquare, Mail, BookOpen } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 interface AdminSidebarProps {
@@ -19,6 +19,7 @@ export default function AdminSidebar({ isOpen = false, onClose }: AdminSidebarPr
         { href: '/admin/talents', label: 'Talent Management', icon: Users },
         { href: '/admin/users', label: 'Registered Users', icon: KeyRound },
         { href: '/admin/forms', label: 'Form Builder', icon: FileText },
+        { href: '/admin/blogs', label: 'Blogs', icon: BookOpen },
         { href: '/admin/contact', label: 'Contact Form', icon: Mail },
         // { href: '/admin/settings', label: 'Settings', icon: Settings },
     ]

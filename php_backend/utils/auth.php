@@ -1,31 +1,26 @@
 <?php
 function authenticate($db)
 {
-    // Fallback for apache_request_headers() if it doesn't exist
-    if (!function_exists('apache_request_headers')) {
-        function apache_request_headers()
-        {
-            $headers = array();
-            foreach ($_SERVER as $key => $value) {
-                if (substr($key, 0, 5) == 'HTTP_') {
-                    $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
-                    $headers[$header] = $value;
-                }
-            }
-            return $headers;
+    // Try to get the Authorization header from various possible sources
+    $authHeader = null;
+
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+    } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+    } elseif (function_exists('apache_request_headers')) {
+        $headers = apache_request_headers();
+        if (isset($headers['Authorization'])) {
+            $authHeader = $headers['Authorization'];
+        } elseif (isset($headers['authorization'])) {
+            $authHeader = $headers['authorization'];
         }
     }
 
-    $headers = apache_request_headers();
     $token = "";
-
-    // Check both Authorization and authorization (case sensitivity)
-    $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : (isset($headers['authorization']) ? $headers['authorization'] : null);
-
     if ($authHeader) {
         $matches = array();
-        preg_match('/Bearer\s(\S+)/', $authHeader, $matches);
-        if (isset($matches[1])) {
+        if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
             $token = $matches[1];
         }
     }
@@ -36,7 +31,7 @@ function authenticate($db)
         exit();
     }
 
-    $query = "SELECT id, role FROM users WHERE api_token = :token LIMIT 1";
+    $query = "SELECT id, name, role FROM users WHERE api_token = :token LIMIT 1";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':token', $token);
     $stmt->execute();

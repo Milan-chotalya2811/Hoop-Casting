@@ -7,9 +7,12 @@ $db = $database->getConnection();
 $data = json_decode(file_get_contents("php://input"));
 
 if (!empty($data->mobile) && !empty($data->password)) {
+    // Trim the input identifier
+    $identifier = trim($data->mobile);
+
     $query = "SELECT id, name, mobile, email, password_hash, role, api_token FROM users WHERE mobile = :identifier OR email = :identifier LIMIT 1";
     $stmt = $db->prepare($query);
-    $stmt->bindParam(':identifier', $data->mobile); // data->mobile contains the input identifier
+    $stmt->bindParam(':identifier', $identifier);
     $stmt->execute();
 
     if ($stmt->rowCount() > 0) {
@@ -41,7 +44,7 @@ if (!empty($data->mobile) && !empty($data->password)) {
         }
     } else {
         http_response_code(401);
-        echo json_encode(["message" => "User not found."]);
+        echo json_encode(["message" => "User not found with this email or mobile number."]);
     }
 } else {
     http_response_code(400);

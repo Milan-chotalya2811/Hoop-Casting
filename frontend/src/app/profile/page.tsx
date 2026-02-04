@@ -72,7 +72,7 @@ export default function MyProfile() {
     const hasPhysicalStats = profile.height_cm || profile.weight_kg || profile.hair_color || profile.eye_color || profile.skin_tone || profile.chest_in || profile.waist_in || profile.hips_in
 
     return (
-        <div className="container" style={{ paddingBottom: '80px' }}>
+        <div className="container" style={{ paddingBottom: '80px', paddingTop: '150px' }}>
             <div className="action-bar">
                 <Link href="/dashboard" className="btn btn-outline dashboard-btn">
                     <ArrowLeft size={16} /> <span className="btn-text">Dashboard</span>

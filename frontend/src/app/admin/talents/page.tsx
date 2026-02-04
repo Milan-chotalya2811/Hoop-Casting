@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import api from '@/lib/api'
 import styles from '../admin.module.css'
 import { Eye, EyeOff, Trash2, Search, Edit, ExternalLink, RefreshCw, FilePlus, KeyRound, Mail, Filter, X } from 'lucide-react'
@@ -15,7 +15,7 @@ const PREDEFINED_CATEGORIES = [
     'Voice Over', 'Dancer', 'Singer', 'Writer', 'Photographer'
 ]
 
-export default function TalentManagement() {
+function TalentManagementContent() {
     const { profile: adminProfile } = useAuth()
     const searchParams = useSearchParams()
 
@@ -152,26 +152,6 @@ export default function TalentManagement() {
 
     const sendPasswordReset = async (email: string, userId: string) => {
         alert("Password reset not implemented in PHP version yet.")
-        // setResetting(userId)
-        // try {
-        //     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        //         redirectTo: `${window.location.origin}/reset-password`,
-        //     })
-
-        //     if (error) throw error
-        //     alert(`Password reset email sent to ${email}`)
-
-        //     await supabase.from('admin_logs').insert({
-        //         admin_id: adminProfile?.id,
-        //         target_user_id: userId,
-        //         action_type: 'password_reset_link',
-        //         details: 'Admin sent reset link via Client SDK'
-        //     })
-        // } catch (error: any) {
-        //     alert('Error sending reset email: ' + error.message)
-        // } finally {
-        //     setResetting(null)
-        // }
     }
 
 
@@ -438,5 +418,13 @@ export default function TalentManagement() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function TalentManagement() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <TalentManagementContent />
+        </Suspense>
     )
 }

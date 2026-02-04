@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Change this to your PHP backend URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
+const API_BASE_URL = 'https://hoopcasting.com/php_backend/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

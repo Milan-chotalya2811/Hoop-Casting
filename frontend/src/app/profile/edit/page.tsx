@@ -383,7 +383,7 @@ export default function EditProfile() {
     if (!user) { router.push('/login'); return null }
 
     return (
-        <div className="container section">
+        <div className="container section" style={{ paddingTop: '140px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
                 <Link href="/profile" className="btn btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     <ArrowLeft size={16} /> Back

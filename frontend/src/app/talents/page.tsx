@@ -47,7 +47,7 @@ export default function TalentsPage() {
     if (loading) return <div className="container section" style={{ marginTop: '100px' }}>Loading Talent...</div>
 
     return (
-        <div className="container" style={{ paddingBottom: '80px', paddingTop: '120px' }}>
+        <div className="container" style={{ paddingBottom: '80px', paddingTop: '140px' }}>
 
             <div style={{ marginBottom: '20px' }}>
                 <Link href="/dashboard" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
