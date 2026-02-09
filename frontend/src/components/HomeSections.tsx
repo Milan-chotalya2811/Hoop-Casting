@@ -428,7 +428,7 @@ export const MessageForDreamers = () => {
         <section className={styles.dreamersSection}>
             <div className={styles.dreamersBg}>
                 <Image
-                    src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?bf=85&w=1920&auto=format&fit=crop"
+                    src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?bf=85&w=1200&q=70&auto=format&fit=crop"
                     alt="Dreamer Background"
                     fill
                     className={styles.dreamersImage}

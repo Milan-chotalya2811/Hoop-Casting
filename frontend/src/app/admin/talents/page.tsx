@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import api from '@/lib/api'
 import styles from '../admin.module.css'
-import { Eye, EyeOff, Trash2, Search, Edit, ExternalLink, RefreshCw, FilePlus, KeyRound, Mail, Filter, X } from 'lucide-react'
+import { Eye, EyeOff, Trash2, Edit, ExternalLink, RefreshCw, FilePlus, KeyRound, Mail, Filter, X } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -116,57 +116,20 @@ function TalentManagementContent() {
             alert('No linked user account found for this profile. Cannot reset password.')
             return
         }
-
-        const action = prompt(`Manage Password for ${talent.users.name || talent.users.email}:\n\nType "1" to Send Reset Email\nType "2" to Set Temporary Password`)
-
-        if (action === '1') {
-            await sendPasswordReset(talent.users.email, talent.users.id)
-        } else if (action === '2') {
-            const newPass = prompt(`Enter new temporary password for ${talent.users.email}:`)
-            if (newPass) await setTempPassword(talent.users.id, newPass)
-        }
+        alert("Password reset features handled via standard forgot password flow.")
     }
-
-    const setTempPassword = async (userId: string, newPass: string) => {
-        setResetting(userId)
-        try {
-            const res = await fetch('/api/admin/set-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId,
-                    password: newPass,
-                    adminId: adminProfile?.id
-                })
-            })
-
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Failed to set password')
-            alert('Temporary password set successfully. User will be forced to change it on next login.')
-        } catch (error: any) {
-            alert('Error: ' + error.message)
-        } finally {
-            setResetting(null)
-        }
-    }
-
-    const sendPasswordReset = async (email: string, userId: string) => {
-        alert("Password reset not implemented in PHP version yet.")
-    }
-
 
     // Derived Lists for Filters
-    // 1. Categories: Merge Predefined + Existing in Data
+    // 1. Categories
     const availableCategories = Array.from(new Set([
         ...PREDEFINED_CATEGORIES,
         ...talents.map(t => t.category).filter(Boolean)
     ])).sort()
 
-    // 2. Locations: Normalize and Unique
+    // 2. Locations
     const availableLocations = Array.from(new Set(
         talents.map(t => {
             if (!t.city) return null;
-            // Title Case Normalization (e.g. mumbai -> Mumbai)
             return t.city.trim().replace(/\w\S*/g, (w: string) => (w.replace(/^\w/, (c) => c.toUpperCase())));
         }).filter(Boolean)
     )).sort()
@@ -192,11 +155,10 @@ function TalentManagementContent() {
         <div>
             <div className={styles.header}>
                 <h1 className={styles.title}>Talent Management</h1>
-                <Link href="/admin/talents/create">
-                    <button className={`${styles.btn} ${styles.btnPrimary}`}>
-                        <FilePlus size={16} />
-                        Add Talent
-                    </button>
+                {/* Fixed Link Structure */}
+                <Link href="/admin/talents/create" className={`${styles.btn} ${styles.btnPrimary}`} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <FilePlus size={16} />
+                    Add Talent
                 </Link>
             </div>
 
@@ -304,9 +266,6 @@ function TalentManagementContent() {
                                             <div style={{ fontWeight: 600 }}>{talent.users?.name || talent.internal_name || 'Unknown'}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                                                 {talent.users?.email || talent.internal_email}
-                                                {adminProfile?.role === 'super_admin' && talent.users?.email && (
-                                                    <span style={{ marginLeft: '6px', color: '#f59e0b', fontSize: '0.7rem' }}>(Linked)</span>
-                                                )}
                                             </div>
                                             {talent.users?.mobile && <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{talent.users.mobile}</div>}
                                         </td>
@@ -323,7 +282,6 @@ function TalentManagementContent() {
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                {/* Contact Actions */}
                                                 {(talent.users?.mobile) && (
                                                     <a
                                                         href={`https://wa.me/${talent.users.mobile.replace(/\D/g, '')}`}
@@ -337,47 +295,19 @@ function TalentManagementContent() {
                                                     </a>
                                                 )}
 
-                                                {(talent.users?.email || talent.internal_email) && (
-                                                    <a
-                                                        href={`mailto:${talent.users?.email || talent.internal_email}`}
-                                                        className={`${styles.btn} ${styles.btnSm}`}
-                                                        style={{ background: '#3b82f6', color: '#fff', border: 'none' }}
-                                                        title="Send Email"
-                                                    >
-                                                        <Mail size={14} />
-                                                    </a>
-                                                )}
-
                                                 {/* Edit */}
                                                 <Link href={`/admin/talents/edit?id=${talent.id}`}>
-                                                    <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Edit Profile">
+                                                    <span className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Edit Profile">
                                                         <Edit size={14} />
-                                                    </button>
+                                                    </span>
                                                 </Link>
 
                                                 {/* Preview */}
-                                                <Link href={`/talent?id=${talent.id}`} target="_blank">
-                                                    <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Preview">
+                                                <a href={`/talent?id=${talent.id}`} target="_blank" rel="noopener noreferrer">
+                                                    <span className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Preview">
                                                         <ExternalLink size={14} />
-                                                    </button>
-                                                </Link>
-
-                                                {/* Super Admin Password Key */}
-                                                {(adminProfile?.role === 'admin') && (
-                                                    <button
-                                                        className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`}
-                                                        onClick={() => handlePasswordAction(talent)}
-                                                        title={talent.users ? "Credentials & Security" : "No Linked User Account"}
-                                                        style={{
-                                                            color: talent.users ? '#f59e0b' : '#9ca3af',
-                                                            borderColor: talent.users ? '#f59e0b' : '#e5e7eb',
-                                                            cursor: talent.users ? 'pointer' : 'not-allowed',
-                                                            opacity: talent.users ? 1 : 0.6
-                                                        }}
-                                                    >
-                                                        <KeyRound size={14} />
-                                                    </button>
-                                                )}
+                                                    </span>
+                                                </a>
 
                                                 {/* Hide/Unhide */}
                                                 {!talent.deleted_at && (

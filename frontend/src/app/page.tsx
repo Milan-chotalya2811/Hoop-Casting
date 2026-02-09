@@ -23,20 +23,20 @@ export default function Home() {
     <main style={{ backgroundColor: 'var(--background)', minHeight: '100vh', color: 'var(--text-main)', overflowX: 'hidden' }}>
       <Preloader onComplete={() => setLoading(false)} />
 
-      {!loading && (
-        <>
-          <HeroSection />
-          <WhatIsHoopCasting />
-          <WhyDifferent />
-          <WhoCanApply />
-          <WhatWeLookFor />
-          <CastingProcess />
-          <WhyTrust />
-          <MessageForDreamers />
-          <BlogSection />
-          <FinalCTA />
-        </>
-      )}
+      {/* Content renders immediately but is covered by preloader initially. 
+          This allows images (especially the Hero background) to fetch in the background. */}
+      <div>
+        <HeroSection />
+        <WhatIsHoopCasting />
+        <WhyDifferent />
+        <WhoCanApply />
+        <WhatWeLookFor />
+        <CastingProcess />
+        <WhyTrust />
+        <MessageForDreamers />
+        <BlogSection />
+        <FinalCTA />
+      </div>
     </main>
   );
 }

@@ -14,18 +14,17 @@
     display: flex;
     flex-direction: column;
     position: fixed;
-    height: 100vh;
+    /* FIX: Set height effectively to prevent overlap */
+    height: calc(100vh - 120px) !important;
     transition: width 0.3s;
-    z-index: 2147483647 !important;
-    /* Force Highest Priority */
-    top: 0;
-    padding-top: 120px;
-    /* Space for Visual Header but allow clicks over it */
-    pointer-events: auto !important;
-    /* Ensure clicks happen */
+    z-index: 50;
+    /* Lower than Header (100) but high enough */
+    /* FIX: Physically move sidebar down below the header */
+    top: 120px !important;
+    padding-top: 0 !important;
+    border-top: 1px solid #374151;
+    overflow-y: auto;
 }
-
-/* Rest of the file unchanged mostly, but ensuring header doesn't cover content */
 
 .sidebarHeader {
     padding: 1.5rem;
@@ -33,17 +32,15 @@
     font-weight: bold;
     border-bottom: 1px solid #374151;
     display: flex;
+    /* Restore header if previously hidden */
     align-items: center;
     gap: 0.5rem;
     color: #f3f4f6;
-    display: none;
-    /* Hide internal header since we rely on global header overlay */
 }
 
 .nav {
     flex: 1;
     padding: 1rem 0;
-    overflow-y: auto;
 }
 
 .navItem {
@@ -55,9 +52,6 @@
     transition: all 0.2s;
     gap: 0.75rem;
     font-weight: 500;
-    position: relative;
-    z-index: 2147483648 !important;
-    /* Even higher */
 }
 
 .navItem:hover,
@@ -71,8 +65,8 @@
     flex: 1;
     margin-left: 260px;
     padding: 2rem;
-    padding-top: 150px;
-    /* Push content extremely down to never hide behind header */
+    /* Push content down to match sidebar/header flow */
+    padding-top: 140px;
     overflow-y: auto;
 }
 
@@ -321,11 +315,12 @@
     .sidebar {
         transform: translateX(-100%);
         width: 260px;
-        height: 100%;
-        top: 0;
-        /* Cover full height on mobile toggle */
-        padding-top: 80px;
-        z-index: 2147483647 !important;
+        height: calc(100% - 80px);
+        /* Mobile Height adjustment */
+        top: 80px;
+        /* Mobile Top adjustment */
+        padding-top: 0;
+        z-index: 50;
     }
 
     .sidebar.open {

@@ -91,15 +91,15 @@ function TalentProfileContent() {
                         <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Physical Stats</h3>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '20px' }}>
                             {[
-                                { label: 'Height', value: profile.height_cm ? `${profile.height_cm} cm` : '-' },
-                                { label: 'Weight', value: profile.weight_kg ? `${profile.weight_kg} kg` : '-' },
-                                { label: 'Hair', value: profile.hair_color || '-' },
-                                { label: 'Eyes', value: profile.eye_color || '-' },
-                                { label: 'Skin Tone', value: profile.skin_tone || '-' },
-                                { label: 'Chest', value: profile.chest_in ? `${profile.chest_in}"` : '-' },
-                                { label: 'Waist', value: profile.waist_in ? `${profile.waist_in}"` : '-' },
-                                { label: 'Hips', value: profile.hips_in ? `${profile.hips_in}"` : '-' },
-                            ].map((stat, i) => (
+                                { label: 'Height', value: profile.height_cm ? `${profile.height_cm} cm` : null },
+                                { label: 'Weight', value: profile.weight_kg ? `${profile.weight_kg} kg` : null },
+                                { label: 'Hair', value: profile.hair_color },
+                                { label: 'Eyes', value: profile.eye_color },
+                                { label: 'Skin Tone', value: profile.skin_tone },
+                                { label: 'Chest', value: profile.chest_in ? `${profile.chest_in}"` : null },
+                                { label: 'Waist', value: profile.waist_in ? `${profile.waist_in}"` : null },
+                                { label: 'Hips', value: profile.hips_in ? `${profile.hips_in}"` : null },
+                            ].filter(stat => stat.value && stat.value !== '-' && stat.value !== 'null').map((stat, i) => (
                                 <div key={i}>
                                     <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{stat.label}</div>
                                     <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{stat.value}</div>
@@ -111,29 +111,37 @@ function TalentProfileContent() {
                     <div className="glass" style={{ padding: '30px', borderRadius: '16px', marginBottom: '30px' }}>
                         <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Professional Details</h3>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <div style={{ color: 'var(--text-muted)' }}>Experience</div>
-                            <div style={{ fontSize: '1.1rem' }}>{profile.years_experience} Years</div>
-                        </div>
-
-                        <div style={{ marginBottom: '20px' }}>
-                            <div style={{ color: 'var(--text-muted)' }}>Skills</div>
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
-                                {profile.skills && profile.skills.length > 0 ? profile.skills.map((s: string, i: number) => (
-                                    <span key={i} style={{ background: 'var(--surface-highlight)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{s}</span>
-                                )) : '-'}
+                        {profile.years_experience && profile.years_experience > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ color: 'var(--text-muted)' }}>Experience</div>
+                                <div style={{ fontSize: '1.1rem' }}>{profile.years_experience} Years</div>
                             </div>
-                        </div>
+                        )}
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <div style={{ color: 'var(--text-muted)' }}>Languages</div>
-                            <p>{profile.languages ? profile.languages.join(', ') : '-'}</p>
-                        </div>
+                        {profile.skills && profile.skills.length > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ color: 'var(--text-muted)' }}>Skills</div>
+                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                    {profile.skills.map((s: string, i: number) => (
+                                        <span key={i} style={{ background: 'var(--surface-highlight)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{s}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                        <div>
-                            <div style={{ color: 'var(--text-muted)' }}>Past Work</div>
-                            <p style={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{profile.past_work || 'No past work listed.'}</p>
-                        </div>
+                        {profile.languages && profile.languages.length > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <div style={{ color: 'var(--text-muted)' }}>Languages</div>
+                                <p>{profile.languages.join(', ')}</p>
+                            </div>
+                        )}
+
+                        {profile.past_work && (
+                            <div>
+                                <div style={{ color: 'var(--text-muted)' }}>Past Work</div>
+                                <p style={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{profile.past_work}</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Custom Fields (Dynamic) */}
@@ -141,16 +149,19 @@ function TalentProfileContent() {
                         <div className="glass" style={{ padding: '30px', borderRadius: '16px', marginBottom: '30px' }}>
                             <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Additional Info</h3>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '20px' }}>
-                                {Object.entries(profile.custom_fields).map(([key, value]: [string, any]) => (
-                                    <div key={key}>
-                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'capitalize' }}>
-                                            {key.replace(/_/g, ' ')}
+                                {Object.entries(profile.custom_fields).map(([key, value]: [string, any]) => {
+                                    if (!value || value === '' || value === 'null') return null;
+                                    return (
+                                        <div key={key}>
+                                            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'capitalize' }}>
+                                                {key.replace(/_/g, ' ')}
+                                            </div>
+                                            <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>
+                                                {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value.toString()}
+                                            </div>
                                         </div>
-                                        <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>
-                                            {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value.toString()}
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
