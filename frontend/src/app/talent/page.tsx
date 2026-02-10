@@ -17,6 +17,7 @@ function TalentProfileContent() {
 
     useEffect(() => {
         if (id) {
+            console.log("Talent Page V13 Loaded")
             const fetchData = async () => {
                 try {
                     const { data } = await api.get(`/profile.php?id=${id}`)
@@ -118,21 +119,21 @@ function TalentProfileContent() {
                             </div>
                         )}
 
-                        {profile.skills && profile.skills.length > 0 && (
+                        {profile.skills && (
                             <div style={{ marginBottom: '20px' }}>
                                 <div style={{ color: 'var(--text-muted)' }}>Skills</div>
                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
-                                    {profile.skills.map((s: string, i: number) => (
-                                        <span key={i} style={{ background: 'var(--surface-highlight)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{s}</span>
+                                    {(Array.isArray(profile.skills) ? profile.skills : (typeof profile.skills === 'string' ? profile.skills.split(',') : [])).map((s: string, i: number) => (
+                                        <span key={i} style={{ background: 'var(--surface-highlight)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{s.trim()}</span>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {profile.languages && profile.languages.length > 0 && (
+                        {profile.languages && (
                             <div style={{ marginBottom: '20px' }}>
                                 <div style={{ color: 'var(--text-muted)' }}>Languages</div>
-                                <p>{profile.languages.join(', ')}</p>
+                                <p>{Array.isArray(profile.languages) ? profile.languages.join(', ') : profile.languages}</p>
                             </div>
                         )}
 

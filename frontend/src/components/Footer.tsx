@@ -4,7 +4,22 @@ import { usePathname } from 'next/navigation'
 import styles from './Footer.module.css'
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail, MapPin, Phone } from 'lucide-react'
 
+import { useEffect, useState } from 'react'
+
 export default function Footer() {
+    const pathname = usePathname()
+    const [isVisible, setIsVisible] = useState(true)
+
+    useEffect(() => {
+        if (pathname && pathname.startsWith('/admin')) {
+            setIsVisible(false)
+        } else {
+            setIsVisible(true)
+        }
+    }, [pathname])
+
+    if (!isVisible) return null
+
     return (
         <footer className={styles.footer}>
             <div className="container">

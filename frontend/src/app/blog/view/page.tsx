@@ -70,7 +70,7 @@ function BlogContent() {
                 {blog.image_url && (
                     <div style={{ width: '100%', height: 'auto', aspectRatio: '16/9', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
                         <img
-                            src={blog.image_url}
+                            src={blog.image_url?.startsWith('http') ? blog.image_url : `https://hoopcasting.com${blog.image_url}`}
                             alt={blog.title}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />

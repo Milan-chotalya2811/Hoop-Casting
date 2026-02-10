@@ -48,7 +48,7 @@ function TalentManagementContent() {
         setLoading(true)
         try {
             const { data } = await api.get('/admin/talents.php')
-            if (data) {
+            if (Array.isArray(data)) {
                 // Map flat structure Back to nested structure for compatibility
                 const mapped = data.map((t: any) => ({
                     ...t,
@@ -60,6 +60,9 @@ function TalentManagementContent() {
                     }
                 }))
                 setTalents(mapped)
+            } else {
+                console.warn('API returned non-array data:', data)
+                setTalents([])
             }
         } catch (error) {
             console.error('Error fetching talents:', error)

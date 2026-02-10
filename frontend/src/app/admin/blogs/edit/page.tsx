@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import api from '@/lib/api'
+import api, { uploadFile } from '@/lib/api'
 import { useRouter, useSearchParams } from 'next/navigation'
 import styles from '../../admin.module.css'
 import Link from 'next/link'
@@ -24,6 +24,8 @@ function EditBlogContent() {
         meta_description: '',
         keywords: ''
     })
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [imagePreview, setImagePreview] = useState<string | null>(null)
 
     useEffect(() => {
         if (id) {
@@ -58,12 +60,27 @@ function EditBlogContent() {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0]
+            setImageFile(file)
+            setImagePreview(URL.createObjectURL(file))
+        }
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSubmitting(true)
 
         try {
-            await api.put('/admin/blogs.php', formData)
+            let finalImageUrl = formData.image_url
+
+            if (imageFile) {
+                const uploadRes = await uploadFile(imageFile)
+                finalImageUrl = uploadRes.url
+            }
+
+            await api.put('/admin/blogs.php', { ...formData, image_url: finalImageUrl })
             alert('Blog updated successfully!')
             router.push('/admin/blogs')
         } catch (error: any) {
@@ -117,15 +134,25 @@ function EditBlogContent() {
                     </div>
 
                     <div className={styles.formGroup}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Thumbnail Image URL</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Thumbnail Image</label>
+                        {formData.image_url && !imagePreview && (
+                            <div style={{ marginBottom: '1rem', width: '200px' }}>
+                                <img src={formData.image_url.startsWith('http') ? formData.image_url : `https://hoopcasting.com${formData.image_url}`} alt="Current" style={{ width: '100%', borderRadius: '4px' }} />
+                                <div style={{ fontSize: '0.8rem', color: '#666' }}>Current Image</div>
+                            </div>
+                        )}
                         <input
-                            type="text"
-                            name="image_url"
-                            value={formData.image_url}
-                            onChange={handleChange}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
                             className={styles.input}
                             style={{ width: '100%', padding: '0.75rem', borderRadius: '4px', border: '1px solid #d1d5db' }}
                         />
+                        {imagePreview && (
+                            <div style={{ marginTop: '1rem', width: '100%', maxHeight: '300px', overflow: 'hidden', borderRadius: '8px' }}>
+                                <img src={imagePreview} alt="Preview" style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.formGroup}>

@@ -18,8 +18,10 @@ export default function BlogManagement() {
         setLoading(true)
         try {
             const { data } = await api.get('/admin/blogs.php')
-            if (data) {
+            if (Array.isArray(data)) {
                 setBlogs(data)
+            } else {
+                setBlogs([])
             }
         } catch (error) {
             console.error('Error fetching blogs:', error)

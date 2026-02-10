@@ -72,7 +72,7 @@ export default function BlogList() {
                                     <div style={{ position: 'relative', height: '240px', background: '#f0f0f0' }}>
                                         {blog.image_url ? (
                                             <img
-                                                src={blog.image_url}
+                                                src={blog.image_url?.startsWith('http') ? blog.image_url : `https://hoopcasting.com${blog.image_url}`}
                                                 alt={blog.title}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
