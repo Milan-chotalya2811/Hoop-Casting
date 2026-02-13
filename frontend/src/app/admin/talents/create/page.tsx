@@ -122,9 +122,10 @@ export default function CreateTalent() {
             const { data } = await api.post('/admin/create_talent.php', payload)
 
             setMessage('Talent created successfully! Redirecting...')
+            router.refresh()
             setTimeout(() => {
                 router.push('/admin/talents')
-            }, 1000)
+            }, 500)
 
         } catch (err: any) {
             console.error(err)

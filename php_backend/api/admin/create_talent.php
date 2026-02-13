@@ -51,27 +51,39 @@ try {
     $checkStmt->execute();
 
     if ($checkStmt->rowCount() > 0) {
-        throw new Exception("User with this email or mobile already exists.");
+        // User exists, get ID
+        $row = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        $userId = $row['id'];
+
+        // Check if profile exists for this user
+        $profileCheckQuery = "SELECT id FROM talent_profiles WHERE user_id = :user_id LIMIT 1";
+        $profileCheckStmt = $db->prepare($profileCheckQuery);
+        $profileCheckStmt->bindParam(':user_id', $userId);
+        $profileCheckStmt->execute();
+
+        if ($profileCheckStmt->rowCount() > 0) {
+            throw new Exception("A talent profile already exists for this user (Email/Mobile).");
+        }
+    } else {
+        // 3. Create User if not exists
+        $password = !empty($data->password) ? $data->password : "Hoop@123"; // Default password
+        $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+        $role = 'user'; // Default role
+
+        $userQuery = "INSERT INTO users (name, email, mobile, password_hash, role, created_at) VALUES (:name, :email, :mobile, :password_hash, :role, NOW())";
+        $userStmt = $db->prepare($userQuery);
+        $userStmt->bindParam(':name', $data->name);
+        $userStmt->bindParam(':email', $data->email);
+        $userStmt->bindParam(':mobile', $data->mobile);
+        $userStmt->bindParam(':password_hash', $passwordHash);
+        $userStmt->bindParam(':role', $role);
+
+        if (!$userStmt->execute()) {
+            throw new Exception("Failed to create user account.");
+        }
+
+        $userId = $db->lastInsertId();
     }
-
-    // 3. Create User
-    $password = !empty($data->password) ? $data->password : "Hoop@123"; // Default password
-    $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-    $role = 'user'; // Default role
-
-    $userQuery = "INSERT INTO users (name, email, mobile, password_hash, role, created_at) VALUES (:name, :email, :mobile, :password_hash, :role, NOW())";
-    $userStmt = $db->prepare($userQuery);
-    $userStmt->bindParam(':name', $data->name);
-    $userStmt->bindParam(':email', $data->email);
-    $userStmt->bindParam(':mobile', $data->mobile);
-    $userStmt->bindParam(':password_hash', $passwordHash);
-    $userStmt->bindParam(':role', $role);
-
-    if (!$userStmt->execute()) {
-        throw new Exception("Failed to create user account.");
-    }
-
-    $userId = $db->lastInsertId();
 
     // 4. Create Profile
     $profileQuery = "INSERT INTO talent_profiles (

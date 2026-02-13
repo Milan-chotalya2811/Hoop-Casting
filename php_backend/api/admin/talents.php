@@ -2,6 +2,13 @@
 include_once '../../config/database.php';
 include_once '../../utils/auth.php';
 
+// Prevent HTML error output interfering with JSON
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json; charset=UTF-8");
+
 $database = new Database();
 $db = $database->getConnection();
 

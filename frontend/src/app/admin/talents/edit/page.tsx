@@ -62,13 +62,37 @@ function EditForm() {
     const [customValues, setCustomValues] = useState<Record<string, any>>({})
     const [loading, setLoading] = useState(true)
 
+    // Safe Parsing Helpers
+    const safeParseArray = (value: any): any[] => {
+        if (!value) return []
+        if (Array.isArray(value)) return value
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value)
+                if (Array.isArray(parsed)) return parsed
+            } catch (e) {
+                // If it looks like a comma-separated list, split it
+                if (value.includes(',')) return value.split(',').map(s => s.trim())
+                // Otherwise treat as single item array
+                return [value]
+            }
+        }
+        return []
+    }
+
+    const safeParseObject = (value: any) => {
+        if (typeof value === 'object' && value !== null) return value
+        if (typeof value === 'string') {
+            try { return JSON.parse(value) } catch (e) { return {} }
+        }
+        return {}
+    }
+
     useEffect(() => {
         if (id) {
             const loadData = async () => {
                 try {
-                    const { data } = await api.get(`/profile.php?id=${id}`) // Admin reads via standard profile endpoint if allowed or needs admin specific
-                    // Actually, profile.php takes `id` for public/admin reading if checks pass
-                    // Or we use /admin/talents.php?id=... but profile.php usually returns detail
+                    const { data } = await api.get(`/profile.php?id=${id}`)
 
                     if (data) {
                         setUser({
@@ -79,17 +103,19 @@ function EditForm() {
 
                         setProfile({
                             ...data,
+                            // Ensure these are strings for the text areas/inputs
                             skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
                             languages: Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages || ''),
                             portfolio_links: Array.isArray(data.portfolio_links) ? data.portfolio_links.join('\n') : (data.portfolio_links || ''),
+
                             travel_surat: data.travel_surat ? 'Yes' : 'No',
                             category: data.category || '',
-                            gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : (data.gallery_urls ? JSON.parse(data.gallery_urls) : [])
+
+                            // Gallery should be an array
+                            gallery_urls: safeParseArray(data.gallery_urls)
                         })
 
-                        if (data.custom_fields) {
-                            try { setCustomValues(typeof data.custom_fields === 'string' ? JSON.parse(data.custom_fields) : data.custom_fields) } catch (e) { setCustomValues({}) }
-                        }
+                        setCustomValues(safeParseObject(data.custom_fields))
                     }
                 } catch (err) {
                     console.error("Error loading profile", err)
@@ -157,9 +183,9 @@ function EditForm() {
             const payload = {
                 id: id,
                 ...profile,
-                skills: profile.skills.split(',').map((s: string) => s.trim()).filter(Boolean),
-                languages: profile.languages.split(',').map((s: string) => s.trim()).filter(Boolean),
-                portfolio_links: profile.portfolio_links.split('\n').map((s: string) => s.trim()).filter(Boolean),
+                skills: profile.skills, // Send as string to avoid JSON encoding issues
+                languages: profile.languages,
+                portfolio_links: profile.portfolio_links,
                 travel_surat: profile.travel_surat === 'Yes',
                 custom_fields: customValues
             }

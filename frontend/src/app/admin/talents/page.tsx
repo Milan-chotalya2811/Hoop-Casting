@@ -47,7 +47,7 @@ function TalentManagementContent() {
     const fetchTalents = async () => {
         setLoading(true)
         try {
-            const { data } = await api.get('/admin/talents.php')
+            const { data } = await api.get(`/admin/talents.php?t=${Date.now()}`)
             if (Array.isArray(data)) {
                 // Map flat structure Back to nested structure for compatibility
                 const mapped = data.map((t: any) => ({

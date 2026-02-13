@@ -15,24 +15,62 @@ function TalentProfileContent() {
     const [loading, setLoading] = useState(true)
     const [modalUrl, setModalUrl] = useState<string | null>(null)
 
+    // Helper to safely parse arrays from various backend formats (JSON string, Array, Comma-separated string)
+    const safeParseArray = (value: any): string[] => {
+        if (!value) return []
+        if (Array.isArray(value)) return value
+        if (typeof value === 'string') {
+            try {
+                // Try strictly parsing JSON first
+                const parsed = JSON.parse(value)
+                if (Array.isArray(parsed)) return parsed
+            } catch (e) {
+                // If not JSON, assume comma-separated
+                if (value.includes(',')) {
+                    return value.split(',').map(s => s.trim()).filter(Boolean)
+                }
+                // Single string value treated as one-item array
+                return [value]
+            }
+        }
+        return []
+    }
+
+    // Helper for Object parsing (Custom Fields)
+    const safeParseObject = (value: any): Record<string, any> => {
+        if (!value) return {}
+        if (typeof value === 'object' && value !== null) return value
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value) || {}
+            } catch (e) {
+                return {}
+            }
+        }
+        return {}
+    }
+
     useEffect(() => {
         if (id) {
-            console.log("Talent Page V13 Loaded")
             const fetchData = async () => {
                 try {
                     const { data } = await api.get(`/profile.php?id=${id}`)
                     if (data) {
-                        // Parse JSON fields
-                        ['languages', 'skills', 'portfolio_links', 'custom_fields', 'social_links', 'gallery_urls'].forEach(field => {
-                            if (data[field] && typeof data[field] === 'string') {
-                                try {
-                                    data[field] = JSON.parse(data[field])
-                                } catch (e) {
-                                    // Keep as string if parse fails (maybe comma separated?)
-                                }
-                            }
-                        })
-                        setProfile(data)
+                        // Normalize the data immediately upon receipt
+                        const normalized = {
+                            ...data,
+                            skills: safeParseArray(data.skills),
+                            languages: safeParseArray(data.languages),
+                            portfolio_links: safeParseArray(data.portfolio_links),
+                            social_links: safeParseObject(data.social_links), // Assuming this works best as object or string? Usually links is object or array. Treating as array mostly.
+                            // Actually social_links in other parts was just a string field. Let's check usage.
+                            // Usage: It's not mapped. It's just displayed? No, it wasn't displayed in the previous code!
+                            // Let's keep it safe.
+                            gallery_urls: safeParseArray(data.gallery_urls),
+                            custom_fields: safeParseObject(data.custom_fields)
+                        }
+
+                        setProfile(normalized)
                     }
                 } catch (error) {
                     console.error("Error fetching profile", error)
@@ -47,20 +85,28 @@ function TalentProfileContent() {
     if (loading) return <div className="container section">Loading Profile...</div>
     if (!profile) return <div className="container section">Profile not found.</div>
 
-    const age = profile.dob ? new Date().getFullYear() - new Date(profile.dob).getFullYear() : 'N/A'
+    // Safe Date Calculation
+    let age = 'N/A'
+    if (profile.dob) {
+        const birthDate = new Date(profile.dob)
+        if (!isNaN(birthDate.getTime())) {
+            age = (new Date().getFullYear() - birthDate.getFullYear()).toString()
+        }
+    }
+
     const displayName = profile.users?.name || profile.internal_name || 'Talent'
 
     return (
         <div className="container" style={{ paddingBottom: '80px' }}>
             <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-                <Link href="/fresh-models" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                <Link href="/talents" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                     <ArrowLeft size={16} /> Back to Talent
                 </Link>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
                 {/* Left Column: Image & Contact */}
-                <div>
+                <div style={{ maxWidth: '400px', margin: '0 auto', width: '100%' }}>
                     <div style={{ position: 'sticky', top: '100px' }}>
                         <img
                             src={profile.profile_photo_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1000&auto=format&fit=crop'}
@@ -71,10 +117,10 @@ function TalentProfileContent() {
                         <div className="glass" style={{ padding: '20px', borderRadius: '16px' }}>
                             <h3 style={{ marginBottom: '16px', color: 'var(--primary)' }}>Contact Info</h3>
                             <div style={{ marginBottom: '10px', display: 'flex', gap: '10px' }}>
-                                <MapPin size={18} /> {profile.city}, {profile.state}
+                                <MapPin size={18} /> {profile.city || 'N/A'}, {profile.state}
                             </div>
                             <div style={{ marginBottom: '10px', display: 'flex', gap: '10px' }}>
-                                <User size={18} /> {profile.gender}, {age} Years
+                                <User size={18} /> {profile.gender || 'Not specified'}, {age} Years
                             </div>
                             <button className="btn btn-primary" style={{ width: '100%', marginTop: '10px' }}>
                                 Contact Talent
@@ -86,7 +132,7 @@ function TalentProfileContent() {
                 {/* Right Column: Details */}
                 <div>
                     <h1 style={{ fontSize: '3rem', lineHeight: 1.1, color: 'var(--secondary)' }}>{displayName}</h1>
-                    <p style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '30px' }}>{profile.category}</p>
+                    <p style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '30px' }}>{profile.category || 'Talent'}</p>
 
                     <div className="glass" style={{ padding: '30px', borderRadius: '16px', marginBottom: '30px' }}>
                         <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Physical Stats</h3>
@@ -119,21 +165,21 @@ function TalentProfileContent() {
                             </div>
                         )}
 
-                        {profile.skills && (
+                        {profile.skills && profile.skills.length > 0 && (
                             <div style={{ marginBottom: '20px' }}>
                                 <div style={{ color: 'var(--text-muted)' }}>Skills</div>
                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px' }}>
-                                    {(Array.isArray(profile.skills) ? profile.skills : (typeof profile.skills === 'string' ? profile.skills.split(',') : [])).map((s: string, i: number) => (
+                                    {profile.skills.map((s: string, i: number) => (
                                         <span key={i} style={{ background: 'var(--surface-highlight)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem' }}>{s.trim()}</span>
                                     ))}
                                 </div>
                             </div>
                         )}
 
-                        {profile.languages && (
+                        {profile.languages && profile.languages.length > 0 && (
                             <div style={{ marginBottom: '20px' }}>
                                 <div style={{ color: 'var(--text-muted)' }}>Languages</div>
-                                <p>{Array.isArray(profile.languages) ? profile.languages.join(', ') : profile.languages}</p>
+                                <p>{profile.languages.join(', ')}</p>
                             </div>
                         )}
 

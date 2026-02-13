@@ -38,6 +38,20 @@ export default function RootLayout({
 
         {/* Chatbot Loader */}
 
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-7VDYR8TZC4"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-7VDYR8TZC4');
+          `}
+        </Script>
       </body>
     </html>
   );
