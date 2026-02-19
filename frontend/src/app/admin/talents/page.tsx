@@ -249,6 +249,7 @@ function TalentManagementContent() {
                                 <th>Name / Email</th>
                                 <th>Category</th>
                                 <th>Location</th>
+                                <th>Created At</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -274,6 +275,7 @@ function TalentManagementContent() {
                                         </td>
                                         <td>{talent.category}</td>
                                         <td>{talent.city}, {talent.state}</td>
+                                        <td>{talent.created_at ? new Date(talent.created_at).toLocaleString() : '-'}</td>
                                         <td>
                                             {talent.deleted_at ? (
                                                 <span className={`${styles.badge} ${styles.badgeDeleted}`}>Deleted</span>

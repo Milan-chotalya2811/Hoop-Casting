@@ -50,6 +50,12 @@ function TalentProfileContent() {
         return {}
     }
 
+    const ensureAbsoluteUrl = (url: string) => {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    }
+
     useEffect(() => {
         if (id) {
             const fetchData = async () => {
@@ -94,7 +100,7 @@ function TalentProfileContent() {
         }
     }
 
-    const displayName = profile.users?.name || profile.internal_name || 'Talent'
+    const displayName = profile.name || profile.users?.name || profile.internal_name || 'Talent'
 
     return (
         <div className="container" style={{ paddingBottom: '80px' }}>
@@ -244,7 +250,7 @@ function TalentProfileContent() {
                             <h3 style={{ marginBottom: '20px', borderBottom: '1px solid var(--border)', paddingBottom: '10px' }}>Portfolio</h3>
                             <div style={{ display: 'grid', gap: '10px' }}>
                                 {profile.portfolio_links.map((link: string, i: number) => (
-                                    <a key={i} href={link} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
+                                    <a key={i} href={ensureAbsoluteUrl(link)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>
                                         {link}
                                     </a>
                                 ))}

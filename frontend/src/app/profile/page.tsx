@@ -71,6 +71,12 @@ export default function MyProfile() {
     // Helper to check if physical stats exist
     const hasPhysicalStats = profile.height_cm || profile.weight_kg || profile.hair_color || profile.eye_color || profile.skin_tone || profile.chest_in || profile.waist_in || profile.hips_in
 
+    const ensureAbsoluteUrl = (url: string) => {
+        if (!url) return '#';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    }
+
     return (
         <div className="container" style={{ paddingBottom: '80px', paddingTop: '150px' }}>
             <div className="action-bar">
@@ -272,14 +278,14 @@ export default function MyProfile() {
                                 {profile.intro_video_url && (
                                     <div style={{ marginBottom: '15px' }}>
                                         <div className="label-sm">Video Profile / Intro</div>
-                                        <a href={profile.intro_video_url} target="_blank" className="link-primary">{profile.intro_video_url}</a>
+                                        <a href={ensureAbsoluteUrl(profile.intro_video_url)} target="_blank" className="link-primary">{profile.intro_video_url}</a>
                                     </div>
                                 )}
 
                                 {profile.social_links && (
                                     <div style={{ marginBottom: '15px' }}>
                                         <div className="label-sm">Social Profile</div>
-                                        <a href={profile.social_links} target="_blank" className="link-primary">{profile.social_links}</a>
+                                        <a href={ensureAbsoluteUrl(profile.social_links)} target="_blank" className="link-primary">{profile.social_links}</a>
                                     </div>
                                 )}
 
@@ -288,7 +294,7 @@ export default function MyProfile() {
                                         <div className="label-sm">Portfolio Links</div>
                                         <div style={{ display: 'grid', gap: '5px' }}>
                                             {(Array.isArray(profile.portfolio_links) ? profile.portfolio_links : [profile.portfolio_links]).map((link: string, i: number) => (
-                                                <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="link-primary">
+                                                <a key={i} href={ensureAbsoluteUrl(link)} target="_blank" rel="noopener noreferrer" className="link-primary">
                                                     {link}
                                                 </a>
                                             ))}

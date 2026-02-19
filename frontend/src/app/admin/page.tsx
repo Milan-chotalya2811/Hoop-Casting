@@ -95,7 +95,7 @@ function RecentTalentsTable() {
     useEffect(() => {
         const fetchRecent = async () => {
             try {
-                const { data } = await api.get('/admin/talents.php?limit=5')
+                const { data } = await api.get('/admin/talents.php?limit=50')
                 if (data) {
                     const mapped = data.map((t: any) => ({
                         ...t,
