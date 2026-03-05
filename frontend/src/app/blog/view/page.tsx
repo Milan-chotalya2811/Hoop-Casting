@@ -26,9 +26,31 @@ function BlogContent() {
                 const { data } = await api.get(url)
                 setBlog(data)
 
-                // Set page title for user experience
-                if (data && data.title) {
-                    document.title = `${data.title} - Hoop Casting`
+                if (data) {
+                    // Set page title for user experience and SEO
+                    document.title = data.meta_title ? `${data.meta_title} - Hoop Casting` : (data.title ? `${data.title} - Hoop Casting` : 'Hoop Casting Blog');
+
+                    // Set Meta Description
+                    let metaDescription = document.querySelector('meta[name="description"]');
+                    if (!metaDescription) {
+                        metaDescription = document.createElement('meta');
+                        metaDescription.setAttribute('name', 'description');
+                        document.head.appendChild(metaDescription);
+                    }
+                    if (data.meta_description) {
+                        metaDescription.setAttribute('content', data.meta_description);
+                    }
+
+                    // Set Meta Keywords
+                    let metaKeywords = document.querySelector('meta[name="keywords"]');
+                    if (!metaKeywords) {
+                        metaKeywords = document.createElement('meta');
+                        metaKeywords.setAttribute('name', 'keywords');
+                        document.head.appendChild(metaKeywords);
+                    }
+                    if (data.keywords) {
+                        metaKeywords.setAttribute('content', data.keywords);
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching blog:', error)
@@ -85,51 +107,6 @@ function BlogContent() {
                     className="blog-content"
                 />
             </div>
-
-            <style jsx global>{`
-                .blog-content h3 {
-                    font-size: 1.6rem;
-                    color: #1F2B5C;
-                    margin-top: 3rem;
-                    margin-bottom: 1.2rem;
-                    font-weight: 800;
-                    font-family: var(--font-heading);
-                }
-                .blog-content h4 {
-                    font-size: 1.3rem;
-                    color: #1F2B5C;
-                    margin-top: 2rem;
-                    margin-bottom: 0.8rem;
-                    font-weight: 700;
-                }
-                .blog-content p {
-                    margin-bottom: 1.5rem;
-                }
-                .blog-content ul {
-                    margin-bottom: 1.5rem;
-                    padding-left: 1.5rem;
-                }
-                .blog-content li {
-                    margin-bottom: 0.8rem;
-                    padding-left: 0.5rem;
-                }
-                .blog-content strong {
-                    color: #1F2B5C;
-                    font-weight: 700;
-                }
-                .blog-content img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 1rem 0;
-                }
-                
-                @media (max-width: 768px) {
-                    .blog-wrapper {
-                        padding: 20px !important;
-                    }
-                }
-            `}</style>
         </article>
     )
 }

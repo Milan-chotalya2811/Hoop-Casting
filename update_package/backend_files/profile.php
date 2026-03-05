@@ -141,32 +141,52 @@ if ($method == 'GET') {
 
     if ($stmt->execute($params)) {
 
-        // EMAIL LOGIC - Only for NEW profiles
+        // EMAIL LOGIC
+        // TEMPORARY: Send email on EVERY update to test.
+        // EMAIL LOGIC - Send on EVERY Create OR Update
+        $userEmail = $user['email'];
+        $adminEmail = 'juhi@monkeyads.in'; // Target Admin Email
+        $senderEmail = 'noreply@hoopcasting.com';
+
         if ($isNewProfile) {
-            $userEmail = $user['email'];
-            $adminEmail = 'juhi@monkeyads.in'; // Target Admin Email
-            $senderEmail = 'juhi@monkeyads.in'; // From Email (may default to server config if not working)
+            // --- NEW PROFILE CREATED ---
+            $subjectUser = "Welcome to Hoop Casting - Profile Created";
+            $messageUser = "Thank you for registering with Hoop Casting.\nYour profile has been created successfully.";
 
-            // 1. Email to User
-            $subjectUser = "Welcome to Hoop Casting - Profile Submitted";
-            $messageUser = "Thank you for registering with Hoop Casting.\nYour profile has been submitted successfully.";
-            $headersUser = "From: $senderEmail" . "\r\n" .
-                "Reply-To: $senderEmail" . "\r\n" .
-                "X-Mailer: PHP/" . phpversion();
-
-            @mail($userEmail, $subjectUser, $messageUser, $headersUser);
-
-            // 2. Email to Admin
             $subjectAdmin = "New Talent Profile Created";
             $messageAdmin = "New Talent Profile Created\n\n" .
-                "A new talent profile has been successfully created on Hoop Casting.\n\n" .
-                "Please review the profile details in the admin panel for further action.\n" .
+                "A new talent profile has been successfully created.\n" .
                 "User: " . ($user['name'] ?? 'Unknown');
-            $headersAdmin = "From: $senderEmail" . "\r\n" .
-                "Reply-To: $userEmail" . "\r\n" .
-                "X-Mailer: PHP/" . phpversion();
 
-            @mail($adminEmail, $subjectAdmin, $messageAdmin, $headersAdmin);
+        } else {
+            // --- PROFILE UPDATED ---
+            $subjectUser = "Hoop Casting - Profile Updated";
+            $messageUser = "Your profile has been updated successfully.";
+
+            $subjectAdmin = "Talent Profile Updated";
+            $messageAdmin = "Talent Profile Updated\n\n" .
+                "A talent profile has been updated.\n" .
+                "User: " . ($user['name'] ?? 'Unknown');
+        }
+
+        // 1. Email to User
+        $headersUser = "From: $senderEmail" . "\r\n" .
+            "Reply-To: $adminEmail" . "\r\n" .
+            "X-Mailer: PHP/" . phpversion();
+
+        $mail1 = mail($userEmail, $subjectUser, $messageUser, $headersUser);
+        if (!$mail1) {
+            error_log("Failed to send email to User: $userEmail");
+        }
+
+        // 2. Email to Admin
+        $headersAdmin = "From: $senderEmail" . "\r\n" .
+            "Reply-To: $userEmail" . "\r\n" .
+            "X-Mailer: PHP/" . phpversion();
+
+        $mail2 = mail($adminEmail, $subjectAdmin, $messageAdmin, $headersAdmin);
+        if (!$mail2) {
+            error_log("Failed to send email to Admin: $adminEmail");
         }
 
         http_response_code(200);

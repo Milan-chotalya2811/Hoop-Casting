@@ -98,7 +98,7 @@ export default function BlogManagement() {
                                                 </Link>
 
                                                 {/* Preview */}
-                                                <Link href={`/blog/${blog.slug}`} target="_blank">
+                                                <Link href={`/blog/view?slug=${blog.slug}`} target="_blank">
                                                     <button className={`${styles.btn} ${styles.btnSecondary} ${styles.btnSm}`} title="Preview">
                                                         <ExternalLink size={14} />
                                                     </button>
