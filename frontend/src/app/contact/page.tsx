@@ -106,7 +106,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <div style={{ fontWeight: 600 }}>Email</div>
-                            <div style={{ color: 'var(--text-muted)' }}>contact@monkeycasting.com</div>
+                            <div style={{ color: 'var(--text-muted)' }}>contact@hoopcasting.com</div>
                         </div>
                     </div>
 
@@ -116,7 +116,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                             <div style={{ fontWeight: 600 }}>Phone</div>
-                            <div style={{ color: 'var(--text-muted)' }}>+91 98765 43210</div>
+                            <div style={{ color: 'var(--text-muted)' }}>+91 90164 75421</div>
                         </div>
                     </div>
 

@@ -1,278 +1,257 @@
+
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import api, { uploadFile } from '@/lib/api'
+import { useAuth } from '@/context/AuthContext'
 import styles from '@/components/Form.module.css'
-import { Save, ArrowLeft } from 'lucide-react'
+import { Save, ArrowLeft, Trash2, Camera, Upload } from 'lucide-react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { fixUrl, compressImage } from '@/lib/utils'
 import GalleryModal from '@/components/GalleryModal'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const CATEGORIES = [
-    "Actor", "Model", "Anchor", "Makeup Artist", "Stylist", "Art Direction",
-    "Photographer", "Videographer", "Video Editor", "Internship in Acting",
-    "Internship in Modeling", "Internship in Anchoring", "Props Renting",
-    "Studio Renting", "Set Designer"
+    "Actor", "Anchor", "Model", "Makeup Artist", "Stylist", "Art Direction",
+    "Photographer", "Videographer", "Video Editor", "Internship",
+    "Props Renting", "Studio Renting", "Set Designer", "Other"
 ]
+
 
 function EditForm() {
     const searchParams = useSearchParams()
     const id = searchParams.get('id')
     const router = useRouter()
+    const { refreshAuth } = useAuth()
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
     const [user, setUser] = useState<any>({})
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState('')
-    const [uploadProgress, setUploadProgress] = useState(0)
     const [isUploading, setIsUploading] = useState(false)
-    const [modalUrl, setModalUrl] = useState<string | null>(null)
-
+    const [fieldMessages, setFieldMessages] = useState<Record<string, {text: string, type: 'info' | 'error' | 'success'}>>({})
+    
     const [profile, setProfile] = useState<any>({
-        city: '',
-        age: '',
-        dob: '',
-        whatsapp_number: '',
-        emergency_contact: '',
-        category: '',
-        bio: '',
-        skills: '',
-        languages: '',
-        portfolio_links: '',
-        past_brand_work: '',
-        agency_status: '',
-        pay_rates: '',
-        travel_surat: 'No',
-        content_rights_agreed: false,
-        chest_in: '',
-        waist_in: '',
-        hips_in: '',
-        skin_tone: '',
-        hair_color: '',
-        eye_color: '',
-        height_cm: '',
-        weight_kg: '',
-        profile_photo_url: '',
-        gallery_urls: [] as string[],
-        intro_video_url: '',
-        social_links: '',
-        deleted_at: null
+        city: '', age: '', dob: '', whatsapp_number: '', category: '',
+        bio: '', skills: '', languages: '', portfolio_links: '',
+        past_brand_work: '', agency_status: '', pay_rates: '',
+        travel_surat: 'No', chest_in: '', waist_in: '', hips_in: '',
+        skin_tone: '', hair_color: '', eye_color: '',
+        height_cm: '', weight_kg: '',
+        profile_photo_url: '', gallery_urls: [] as string[],
+        travel_surat_bool: false
     })
-
-    const [customValues, setCustomValues] = useState<Record<string, any>>({})
-    const [loading, setLoading] = useState(true)
-
-    // Safe Parsing Helpers
-    const safeParseArray = (value: any): any[] => {
-        if (!value) return []
-        if (Array.isArray(value)) return value
-        if (typeof value === 'string') {
-            try {
-                const parsed = JSON.parse(value)
-                if (Array.isArray(parsed)) return parsed
-            } catch (e) {
-                // If it looks like a comma-separated list, split it
-                if (value.includes(',')) return value.split(',').map(s => s.trim())
-                // Otherwise treat as single item array
-                return [value]
-            }
-        }
-        return []
-    }
-
-    const safeParseObject = (value: any) => {
-        if (typeof value === 'object' && value !== null) return value
-        if (typeof value === 'string') {
-            try { return JSON.parse(value) } catch (e) { return {} }
-        }
-        return {}
-    }
 
     useEffect(() => {
         if (id) {
             const loadData = async () => {
                 try {
                     const { data } = await api.get(`/profile.php?id=${id}`)
-
                     if (data) {
-                        setUser({
-                            name: data.name,
-                            email: data.email,
-                            mobile: data.mobile
-                        })
-
+                        setUser({ name: data.name, email: data.email })
                         setProfile({
                             ...data,
-                            // Ensure these are strings for the text areas/inputs
-                            skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
-                            languages: Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages || ''),
-                            portfolio_links: Array.isArray(data.portfolio_links) ? data.portfolio_links.join('\n') : (data.portfolio_links || ''),
-
-                            travel_surat: data.travel_surat ? 'Yes' : 'No',
-                            category: data.category || '',
-
-                            // Gallery should be an array
-                            gallery_urls: safeParseArray(data.gallery_urls)
+                            gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : (typeof data.gallery_urls === 'string' && data.gallery_urls.startsWith('[') ? JSON.parse(data.gallery_urls) : []),
+                            skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills === '[]' ? '' : (data.skills || '')),
+                            languages: Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages === '[]' ? '' : (data.languages || '')),
                         })
-
-                        setCustomValues(safeParseObject(data.custom_fields))
                     }
-                } catch (err) {
-                    console.error("Error loading profile", err)
-                    setMessage("Error loading profile data.")
-                } finally {
-                    setLoading(false)
-                }
+                } catch (err) { console.error(err) }
             }
             loadData()
         }
     }, [id])
 
-    const handleChange = (e: any) => {
-        const { name, value, type, checked } = e.target
-        const val = type === 'checkbox' ? checked : value
-
-        if (name === 'whatsapp_number') {
-            // numeric only
-            const v = value.replace(/[^0-9]/g, '').slice(0, 10);
-            setProfile((prev: any) => ({ ...prev, [name]: v }))
-            return
-        }
-
-        const columnFields = Object.keys(profile)
-        if (columnFields.includes(name)) {
-            setProfile((prev: any) => ({ ...prev, [name]: val }))
-        } else {
-            setCustomValues(prev => ({ ...prev, [name]: val }))
-        }
-    }
-
     const handleFileUpload = async (e: any, fieldName: string) => {
-        const file = e.target.files[0]
-        if (!file) return
+        const files = Array.from(e.target.files as FileList)
+        if (!files.length) return
 
         try {
-            setSubmitting(true)
-            setIsUploading(true)
-            setMessage('Uploading...')
-
-            const response = await uploadFile(file, (percent) => setUploadProgress(percent))
-
-            let publicUrl = response.url
-            if (publicUrl.startsWith('/')) {
-                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
-                // Adjust if needed, or rely on relative
-                // Usually backend returns full path or relative to domain
+            setSubmitting(true); setIsUploading(true)
+            setFieldMessages(prev => ({ ...prev, [fieldName]: { text: `Uploading ${files.length} Item(s)...`, type: 'info' } }))
+            
+            if (fieldName === 'gallery') {
+                const uploadedUrls: string[] = []
+                for (const file of files) {
+                    const compressedFile = await compressImage(file) as File
+                    const response = await uploadFile(compressedFile)
+                    uploadedUrls.push(response.url)
+                }
+                setProfile((prev: any) => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), ...uploadedUrls] }))
+                setFieldMessages(prev => ({ ...prev, [fieldName]: { text: `Successfully Added ${files.length} Item(s)!`, type: 'success' } }))
+            } else {
+                const file = files[0]
+                const compressedFile = await compressImage(file) as File
+                const response = await uploadFile(compressedFile)
+                const publicUrl = response.url
+                setProfile((prev: any) => ({ ...prev, [fieldName]: publicUrl }))
+                if (fieldName === 'profile_photo_url') {
+                   setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Syncing...', type: 'info' } }))
+                   await api.post('/admin/update_profile.php', { id, profile_photo_url: publicUrl, category: profile.category });
+                   await refreshAuth()
+                }
+                setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Uploaded!', type: 'success' } }))
             }
-
-            setProfile((prev: any) => ({ ...prev, [fieldName]: publicUrl }))
-            setMessage('Upload successful')
         } catch (err: any) {
-            setMessage('Upload error: ' + err.message)
-        } finally {
-            setSubmitting(false)
-            setIsUploading(false)
-        }
+            setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Error: ' + err.message, type: 'error' } }))
+        } finally { setSubmitting(false); setIsUploading(false) }
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault()
         setSubmitting(true)
-
         try {
-            const payload = {
-                id: id,
+            await api.post('/admin/update_profile.php', { 
+                id, 
                 ...profile,
-                skills: profile.skills, // Send as string to avoid JSON encoding issues
-                languages: profile.languages,
-                portfolio_links: profile.portfolio_links,
-                travel_surat: profile.travel_surat === 'Yes',
-                custom_fields: customValues
-            }
-
-            await api.post('/admin/update_profile.php', payload)
-            setMessage('Profile updated successfully!')
-            window.scrollTo(0, 0)
-
-        } catch (err: any) {
-            setMessage('Error: ' + err.message)
-        } finally {
-            setSubmitting(false)
-        }
+                skills: (profile.skills || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+                languages: (profile.languages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+            })
+            await refreshAuth()
+            setMessage('Profile Saved Successfully! Redirecting...')
+            setTimeout(() => {
+                router.push('/admin/talents')
+            }, 1000)
+        } catch (err: any) { setMessage('Error: ' + err.message) }
+        finally { setSubmitting(false) }
     }
 
-    if (loading) return <div className="container section">Loading...</div>
-
     return (
-        <div className="container section">
-            <Link href="/admin/talents" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '20px', textDecoration: 'none' }}>
-                <ArrowLeft size={16} /> Back to List
+        <div className="container section" style={{ paddingTop: '40px' }}>
+            <Link href="/admin/talents" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                <ArrowLeft size={16} /> Back
             </Link>
 
-            <div className={styles.card}>
-                <h1 className="title-gradient" style={{ marginBottom: '5px' }}>Edit Talent Profile</h1>
-                <p style={{ marginBottom: '20px', color: '#666' }}>Editing: {user.name} ({user.email})</p>
+            <div className={styles.card} style={{ maxWidth: '100%', border: '1px solid #000', background: '#fff', padding: '30px' }}>
+                <h1 style={{ color: '#000', marginBottom: '5px' }}>Edit Talent Profile (Admin)</h1>
+                <p style={{ color: '#000', marginBottom: '25px' }}>Editing: <strong>{user.name}</strong></p>
 
-                {message && <div style={{ padding: '10px', background: '#eee', marginBottom: '20px', borderRadius: '4px' }}>{message}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    <SectionTitle title="Core Info" />
-                    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                    <SectionTitle title="Personal & Core Information" />
+                    <div className="grid">
                         <div className={styles.formGroup}>
-                            <label>Category</label>
-                            <select className={styles.select} name="category" value={profile.category} onChange={handleChange}>
-                                <option value="">Select...</option>
+                            <label style={{color: '#000', fontWeight: 'bold', display: 'block', marginBottom: '8px'}}>Category</label>
+                            <select name="category" value={profile.category} onChange={(e) => setProfile({...profile, category: e.target.value})} style={{width: '100%', padding: '12px', border: '1px solid #000', borderRadius: '8px', color: '#000', background: '#fff'}}>
+                                <option value="">Select Category...</option>
                                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
-                        <Field name="city" label="City" value={profile.city} onChange={handleChange} />
-                        <Field name="whatsapp_number" label="WhatsApp" value={profile.whatsapp_number} onChange={handleChange} />
+                        <Field label="City" value={profile.city} onChange={(e: any) => setProfile({...profile, city: e.target.value})} />
+                        <Field label="WhatsApp" value={profile.whatsapp_number} onChange={(e: any) => setProfile({...profile, whatsapp_number: e.target.value})} />
+                        <Field label="Age" type="number" value={profile.age} onChange={(e: any) => setProfile({...profile, age: e.target.value})} />
                     </div>
 
-                    <SectionTitle title="Details" />
-                    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
-                        <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                        <Field name="height_cm" label="Height (cm)" type="number" value={profile.height_cm} onChange={handleChange} />
-                        <Field name="weight_kg" label="Weight (kg)" type="number" value={profile.weight_kg} onChange={handleChange} />
+                    <SectionTitle title="Measurements" />
+                    <div className="grid-measure">
+                        <Field label="Height (cm)" value={profile.height_cm} onChange={(e: any) => setProfile({...profile, height_cm: e.target.value})} />
+                        <Field label="Weight (kg)" value={profile.weight_kg} onChange={(e: any) => setProfile({...profile, weight_kg: e.target.value})} />
+                        <Field label="Chest" value={profile.chest_in} onChange={(e: any) => setProfile({...profile, chest_in: e.target.value})} />
+                        <Field label="Waist" value={profile.waist_in} onChange={(e: any) => setProfile({...profile, waist_in: e.target.value})} />
+                        <Field label="Hips" value={profile.hips_in} onChange={(e: any) => setProfile({...profile, hips_in: e.target.value})} />
                     </div>
 
-                    <div style={{ marginTop: '20px' }}>
-                        <Field name="bio" label="Bio" type="textarea" value={profile.bio} onChange={handleChange} />
-                        <Field name="portfolio_links" label="Portfolio Links (One per line)" type="textarea" value={profile.portfolio_links} onChange={handleChange} />
+                    <SectionTitle title="Professional Details" />
+                    <div className="grid">
+                        <Field label="Bio" type="textarea" value={profile.bio} onChange={(e: any) => setProfile({...profile, bio: e.target.value})} />
+                        <Field label="Skills" value={profile.skills} onChange={(e: any) => setProfile({...profile, skills: e.target.value})} />
+                        <Field label="Languages" value={profile.languages} onChange={(e: any) => setProfile({...profile, languages: e.target.value})} />
+                        <Field label="Pay Rates" value={profile.pay_rates} onChange={(e: any) => setProfile({...profile, pay_rates: e.target.value})} />
                     </div>
 
-                    <SectionTitle title="Media" />
-                    <div className={styles.formGroup}>
-                        <label>Profile Photo</label>
-                        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                            {profile.profile_photo_url && <img src={profile.profile_photo_url} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: '8px' }} />}
-                            <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
+                    {/* MEDIA AT THE END */}
+                    <SectionTitle title="Media Portfolio" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px', border: '1px solid #000', borderRadius: '20px', background: '#fafafa', marginBottom: '30px' }}>
+                        <img key={profile.profile_photo_url} src={fixUrl(profile.profile_photo_url)} style={{ width: 100, height: 130, borderRadius: '15px', objectFit: 'cover', objectPosition: 'top center', border: '1px solid #000' }} onError={(e: any) => e.target.src = '/default_avatar.png'} />
+                        <div>
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                <button type="button" className="btn btn-primary" style={{ padding: '10px 20px' }}>Change Profile Photo</button>
+                                <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} accept="image/*" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
+                            </div>
+                            {fieldMessages.profile_photo_url && <div style={{ marginTop: '10px', fontSize: '0.85rem', color: '#10b981', fontWeight: 'bold' }}>{fieldMessages.profile_photo_url.text}</div>}
                         </div>
                     </div>
 
-                    <div style={{ marginTop: '30px' }}>
-                        <button className="btn btn-primary" type="submit" disabled={submitting || isUploading}>
-                            {submitting ? 'Saving...' : 'Update Profile'}
-                        </button>
+                    <div className="gallery-grid">
+                        {profile.gallery_urls && profile.gallery_urls.map((url: string, i: number) => (
+                            <div key={`${url}-${i}`} className="gallery-item-square" onClick={() => setPreviewUrl(url)}>
+                                <img src={fixUrl(url)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
+                                <button type="button" onClick={(e) => { e.stopPropagation(); setProfile({...profile, gallery_urls: profile.gallery_urls.filter((_: any, idx: number) => idx !== i)}); }} style={{ position: 'absolute', top: 5, right: 5, background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                        ))}
+                        <div className="gallery-add-box-square" style={{ position: 'relative' }}>
+                            <Upload size={24} color="#000" />
+                            <span style={{color: '#000', fontSize: '0.8rem', marginTop: '5px'}}>+ Add Media</span>
+                            <input type="file" multiple onChange={(e) => handleFileUpload(e, 'gallery')} accept="image/*" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
+                        </div>
                     </div>
+                    {fieldMessages.gallery && <div style={{ marginTop: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 'bold' }}>{fieldMessages.gallery.text}</div>}
+
+                    <button type="submit" className="btn btn-primary" style={{ marginTop: '50px', width: '100%', padding: '18px', fontWeight: 'bold', fontSize: '1.2rem', borderRadius: '16px' }} disabled={submitting || isUploading}>
+                        Save All Changes
+                    </button>
+                    {message && (
+                        <div style={{ marginTop: '20px', padding: '16px', background: '#dcfce7', color: '#16a34a', borderRadius: '12px', border: '1px solid currentColor', textAlign: 'center', fontWeight: 'bold' }}>
+                            {message}
+                        </div>
+                    )}
                 </form>
             </div>
+                             <style jsx global>{` 
+                .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; } 
+                .grid-measure { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; } 
+                .gallery-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+                    gap: 15px !important;
+                }
+                .gallery-item-square {
+                    aspect-ratio: 1;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    border: 1px solid #000;
+                    position: relative;
+                    cursor: pointer;
+                }
+                .gallery-add-box-square {
+                    aspect-ratio: 1;
+                    border: 2px dashed #000;
+                    border-radius: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    background: #fafafa;
+                }
+                @media (max-width: 768px) {
+                    .gallery-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
+                }
+                @media (max-width: 480px) {
+                    .gallery-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+                }
+            `}</style>
+            <GalleryModal isOpen={!!previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
         </div>
     )
 }
 
 function SectionTitle({ title }: { title: string }) {
-    return <h3 className="gold-text" style={{ marginTop: '30px', marginBottom: '15px', borderBottom: '1px solid #ddd' }}>{title}</h3>
+    return <h3 style={{ marginTop: '40px', marginBottom: '20px', color: '#000', borderBottom: '2px solid #000', paddingBottom: '8px', fontSize: '1.2rem', fontWeight: 'bold' }}>{title}</h3>
 }
 
-function Field({ label, name, value, onChange, type = "text", ...props }: any) {
+function Field({ label, value, onChange, type = "text" }: any) {
     return (
         <div className={styles.formGroup}>
-            <label>{label}</label>
-            {type === 'textarea' ?
-                <textarea className={styles.textarea} name={name} value={value || ''} onChange={onChange} rows={4} {...props} /> :
-                <input className={styles.input} type={type} name={name} value={value || ''} onChange={onChange} {...props} />
-            }
+            <label style={{ color: '#000', fontSize: '0.9rem', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>{label}</label>
+            {type === 'textarea' ? (
+                <textarea value={value || ''} onChange={onChange} style={{ width: '100%', padding: '12px', border: '1px solid #000', borderRadius: '8px', color: '#000', background: '#fff' }} rows={3} />
+            ) : (
+                <input type={type} value={value || ''} onChange={onChange} style={{ width: '100%', padding: '12px', border: '1px solid #000', borderRadius: '8px', color: '#000', background: '#fff' }} />
+            )}
         </div>
     )
 }

@@ -404,9 +404,92 @@
 
 /* --- Final Word --- */
 .finalWordSection {
-    padding: 8rem 0;
-    text-align: center;
+    padding: 4rem 0;
     background: #f8f8f8;
+}
+
+@media (min-width: 768px) {
+    .finalWordSection {
+        padding: 8rem 0;
+    }
+}
+
+.finalWordGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+}
+
+@media (min-width: 768px) {
+    .finalWordGrid {
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+    }
+}
+
+.finalWordContent {
+    text-align: center;
+    padding: 0 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .finalWordContent {
+        text-align: left;
+    }
+}
+
+.finalWordSplineWrapper {
+    width: 100%;
+    /* Full width on mobile */
+    margin: 0;
+    height: 550px;
+    min-height: 550px;
+    background: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+    display: none;
+    /* Hide on mobile to fix lag/scroll issues */
+    pointer-events: none;
+    touch-action: pan-y;
+}
+
+@media (min-width: 768px) {
+    .finalWordSplineWrapper {
+        display: flex;
+        /* Show on desktop */
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin: 0;
+        min-height: 480px;
+        height: 480px;
+        pointer-events: auto;
+    }
+}
+
+.finalWordSplineZoomer {
+    width: 180%;
+    height: 180%;
+    flex-shrink: 0;
+    transform: scale(0.5);
+    transform-origin: center;
+    pointer-events: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    will-change: transform;
+    /* Hardware acceleration */
+}
+
+@media (min-width: 768px) {
+    .finalWordSplineZoomer {
+        width: 200%;
+        height: 200%;
+        transform: scale(0.5);
+    }
 }
 
 .finalHeadline {
@@ -430,6 +513,7 @@
 
 .ctaWrapper {
     margin-top: 2rem;
+    pointer-events: auto;
 }
 
 .finalBtn {

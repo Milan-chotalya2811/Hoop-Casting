@@ -10,10 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import api from '@/lib/api'
 
 const CATEGORIES = [
-    "Actor", "Model", "Anchor", "Makeup Artist", "Stylist", "Art Direction",
-    "Photographer", "Videographer", "Video Editor", "Internship in Acting",
-    "Internship in Modeling", "Internship in Anchoring", "Props Renting",
-    "Studio Renting", "Set Designer"
+    "Actor", "Anchor", "Model", "Makeup Artist", "Stylist", "Art Direction",
+    "Photographer", "Videographer", "Video Editor", "Internship",
+    "Props Renting", "Studio Renting", "Set Designer", "Other"
 ]
 
 export default function CreateTalent() {
@@ -116,6 +115,11 @@ export default function CreateTalent() {
             // Prepare Payload
             const payload = {
                 ...formData,
+                skills: (formData.skills || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+                languages: (formData.languages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
+                portfolio_links: (formData.portfolio_links || '').split('\n').map((s: string) => s.trim()).filter(Boolean),
+                travel_surat: formData.travel_surat === 'Yes',
+                content_rights_agreed: formData.content_rights_agreed ? 1 : 0,
                 custom_fields: customValues
             }
 

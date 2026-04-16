@@ -19,7 +19,7 @@ export default function BlogList() {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const { data } = await api.get('/blogs.php')
+                const { data } = await api.get(`/blogs.php?t=${Date.now()}`)
                 if (data) {
                     setBlogs(data)
                 }

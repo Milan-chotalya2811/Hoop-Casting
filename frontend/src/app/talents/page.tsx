@@ -7,12 +7,14 @@ import styles from '@/app/page.module.css'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { ArrowLeft } from 'lucide-react'
+import { fixUrl } from '@/lib/utils'
 
 export default function TalentsPage() {
     const { user, loading: authLoading } = useAuth()
     const router = useRouter()
     const [profiles, setProfiles] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
+
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -26,7 +28,11 @@ export default function TalentsPage() {
         const fetchProfiles = async () => {
             try {
                 const { data } = await api.get('/talents.php?limit=50')
-                if (data) {
+                if (data && Array.isArray(data)) {
+                    // Map flat structure (name) to nested structure (users.name) expected by component or just use flat?
+                    // Component uses: p.users?.name
+                    // My API returns: name directly.
+                    // Let's normalize it.
                     const mapped = data.map((t: any) => ({
                         ...t,
                         users: { name: t.name }
@@ -70,7 +76,7 @@ export default function TalentsPage() {
                         <Link href={`/talent?id=${p.id}`} key={p.id}>
                             <div className={styles.castCard} style={{ height: 'auto', aspectRatio: '1/1', width: '100%' }}>
                                 <img
-                                    src={p.profile_photo_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1000&auto=format&fit=crop'}
+                                    src={fixUrl(p.profile_photo_url)}
                                     alt="Profile"
                                     className={styles.castImg}
                                 />

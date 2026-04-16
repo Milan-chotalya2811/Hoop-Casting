@@ -7,6 +7,7 @@ import api from '@/lib/api'
 import Link from 'next/link'
 import styles from '@/components/Form.module.css' // Reusing some card styles
 import { UserCircle, Edit, Shield, Lock } from 'lucide-react'
+import { fixUrl } from '@/lib/utils'
 
 export default function Dashboard() {
     const { user, profile, loading } = useAuth()
@@ -55,11 +56,12 @@ export default function Dashboard() {
                 <div className="glass" style={{ padding: '30px', borderRadius: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                         <div style={{ padding: '2px', background: 'var(--surface)', borderRadius: '50%', flexShrink: 0, width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                            {talentProfile?.profile_photo_url ? (
-                                <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} />
-                            ) : (
-                                <UserCircle size={40} color="var(--primary)" />
-                            )}
+                            <img 
+                                src={fixUrl(talentProfile?.profile_photo_url)} 
+                                alt="Profile" 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} 
+                                onError={(e: any) => e.target.src = '/default_avatar.png'}
+                            />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <h2 style={{ fontSize: '1.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={profile?.name || user.email}>
@@ -112,13 +114,12 @@ export default function Dashboard() {
                                     <strong>Views:</strong> 0
                                 </div>
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
-                                    {talentProfile.profile_photo_url ? (
-                                        <img src={talentProfile.profile_photo_url} alt="Profile" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top' }} />
-                                    ) : (
-                                        <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <UserCircle size={30} />
-                                        </div>
-                                    )}
+                                    <img 
+                                        src={fixUrl(talentProfile.profile_photo_url)} 
+                                        alt="Profile" 
+                                        style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top' }} 
+                                        onError={(e: any) => e.target.src = '/default_avatar.png'}
+                                    />
                                     <div>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Profile Status: <span style={{ color: '#fff' }}>Visible</span></p>
                                         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Category: <span style={{ color: '#fff' }}>{talentProfile.category}</span></p>

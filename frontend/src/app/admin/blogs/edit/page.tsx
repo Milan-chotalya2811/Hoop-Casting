@@ -31,8 +31,8 @@ function EditBlogContent() {
         if (id) {
             const fetchBlog = async () => {
                 try {
-                    // Use public API to get blog details
-                    const { data } = await api.get(`/blogs.php?id=${id}`)
+                    // Use public API to get blog details with cache-buster
+                    const { data } = await api.get(`/blogs.php?id=${id}&t=${Date.now()}`)
                     if (data) {
                         setFormData({
                             id: data.id,
@@ -80,7 +80,8 @@ function EditBlogContent() {
                 finalImageUrl = uploadRes.url
             }
 
-            await api.put('/admin/blogs.php', { ...formData, image_url: finalImageUrl })
+            // Using POST instead of PUT for better server compatibility
+            await api.post('/admin/blogs.php', { ...formData, image_url: finalImageUrl })
             alert('Blog updated successfully!')
             router.push('/admin/blogs')
         } catch (error: any) {

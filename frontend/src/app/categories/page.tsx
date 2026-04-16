@@ -7,6 +7,7 @@ import api from '@/lib/api'
 import styles from '@/app/page.module.css'
 import { ArrowLeft } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { fixUrl } from '@/lib/utils'
 
 const CATEGORY_DATA = [
     { name: "Actor", image: "/categories/actor_human_happy.png" },
@@ -31,17 +32,14 @@ function CategoriesContent() {
     const [profiles, setProfiles] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
 
+
     useEffect(() => {
         if (filter) {
             const fetchProfiles = async () => {
                 setLoading(true)
                 try {
                     const { data } = await api.get(`/talents.php?category=${filter}`)
-                    if (data) {
-                        // Map flat structure (name) to nested structure (users.name) expected by component or just use flat?
-                        // Component uses: p.users?.name
-                        // My API returns: name directly.
-                        // Let's normalize it.
+                    if (data && Array.isArray(data)) {
                         const mapped = data.map((t: any) => ({
                             ...t,
                             users: { name: t.name }
@@ -77,9 +75,11 @@ function CategoriesContent() {
                                 <Link href={`/talent?id=${p.id}`} key={p.id}>
                                     <div className={styles.castCard} style={{ height: '400px', width: '100%', borderRadius: '16px', overflow: 'hidden' }}>
                                         <img
-                                            src={p.profile_photo_url || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=1000&auto=format&fit=crop'}
+                                            src={fixUrl(p.profile_photo_url)}
                                             alt="Profile"
                                             className={styles.castImg}
+                                            style={{ objectPosition: 'top center' }}
+                                            onError={(e: any) => e.target.src = '/default_avatar.png'}
                                         />
                                         <div className={styles.castOverlay}>
                                             <div className={styles.castName}>{p.users?.name || 'Unknown'}</div>
@@ -129,7 +129,7 @@ function CategoriesContent() {
                         <Link href="#" className="category-card" style={{ position: 'relative', height: '250px', borderRadius: '20px', overflow: 'hidden', textDecoration: 'none', display: 'block', cursor: 'default' }}>
                             <div style={{
                                 position: 'absolute', inset: 0,
-                                backgroundImage: `url('${cat.image}')`,
+                                backgroundImage: `url('${fixUrl(cat.image)}')`,
                                 backgroundSize: 'cover',
                                 backgroundPosition: 'top',
                                 transition: 'transform 0.5s ease'

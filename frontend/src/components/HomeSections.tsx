@@ -5,7 +5,10 @@ import { motion, useScroll, useTransform, useInView, AnimatePresence } from 'fra
 import { Play, Star, Film, MonitorPlay, Users, Camera, Clapperboard, CheckCircle, Video, UserCheck, Heart, ArrowRight, ShieldCheck, Mail, Sparkles, TrendingUp, Globe, Mic } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import styles from './HomeSections.module.css';
+
+
 
 // --- Shared Components ---
 
@@ -468,10 +471,10 @@ export const FinalCTA = () => {
         <section className={styles.ctaSection}>
             <div className={styles.ctaNoise}></div>
 
-            <div className={styles.container}>
+            <div className={`${styles.container} ${styles.ctaGridContainer}`}>
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     className={styles.ctaContent}
                 >
                     <h2 className={styles.ctaHeadline}>
@@ -479,16 +482,31 @@ export const FinalCTA = () => {
                         Your talent deserves the right camera.
                     </h2>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', marginTop: '3rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1.5rem', marginTop: '3rem' }}>
                         <Link href="/register" className={styles.blackBtn}>
                             <Play fill="currentColor" size={20} />
                             Apply for Hoop Casting
                         </Link>
                     </div>
 
-                    <p className={styles.linkText} style={{ color: '#1F2B5C' }}>
+                    <p className={styles.linkText} style={{ color: '#1F2B5C', textAlign: 'left' }}>
                         👉 Submit Your Hoop Casting Profile Now
                     </p>
+                </motion.div>
+
+                <motion.div
+                    initial={{ opacity: 0, x: 30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    className={styles.ctaImgWrapper}
+                    style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}
+                >
+                    <img
+                        src="/final_cta_talent.png"
+                        alt="Join Hoop Casting"
+                        style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
+                        width={500}
+                        height={500}
+                    />
                 </motion.div>
             </div>
         </section>

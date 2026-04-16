@@ -9,33 +9,46 @@ $data = json_decode(file_get_contents("php://input"));
 if (!empty($data->mobile) && !empty($data->password)) {
     // Trim the input identifier
     $identifier = trim($data->mobile);
+    $input_password = trim($data->password); // Trim password to avoid autofill space issues
 
-    $query = "SELECT id, name, mobile, email, password_hash, role, api_token FROM users WHERE mobile = :identifier OR email = :identifier LIMIT 1";
+    // Fetch all users that match the given identifier (to handle duplicate accounts)
+    $query = "SELECT id, name, mobile, email, password_hash, role, api_token FROM users WHERE mobile = :identifier OR email = :identifier";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':identifier', $identifier);
     $stmt->execute();
 
     if ($stmt->rowCount() > 0) {
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (password_verify($data->password, $row['password_hash'])) {
-            // If token is empty (legacy or new session), generate one
-            if (empty($row['api_token'])) {
-                $new_token = bin2hex(random_bytes(32));
+        $loggedInUser = null;
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            // Verify password for each matching account
+            if (password_verify($input_password, $row['password_hash']) || password_verify($data->password, $row['password_hash'])) {
+                $loggedInUser = $row;
+                break; // Found the matching valid account
+            }
+        }
+
+        if ($loggedInUser) {
+            // Unify token generation logic
+            $tokenToUse = $loggedInUser['api_token'];
+            
+            // Re-generate token to ensure uniqueness and refresh session token
+            if (empty($tokenToUse)) {
+                $tokenToUse = bin2hex(random_bytes(32));
                 $update = $db->prepare("UPDATE users SET api_token = :token WHERE id = :id");
-                $update->execute([':token' => $new_token, ':id' => $row['id']]);
-                $row['api_token'] = $new_token;
+                $update->execute([':token' => $tokenToUse, ':id' => $loggedInUser['id']]);
             }
 
             http_response_code(200);
             echo json_encode([
                 "message" => "Login successful.",
-                "token" => $row['api_token'],
+                "token" => $tokenToUse,
                 "user" => [
-                    "id" => $row['id'],
-                    "name" => $row['name'],
-                    "mobile" => $row['mobile'],
-                    "email" => $row['email'],
-                    "role" => $row['role']
+                    "id" => $loggedInUser['id'],
+                    "name" => $loggedInUser['name'],
+                    "mobile" => $loggedInUser['mobile'],
+                    "email" => $loggedInUser['email'],
+                    "role" => $loggedInUser['role']
                 ]
             ]);
         } else {
@@ -48,6 +61,6 @@ if (!empty($data->mobile) && !empty($data->password)) {
     }
 } else {
     http_response_code(400);
-    echo json_encode(["message" => "Incomplete data. Mobile and password are required."]);
+    echo json_encode(["message" => "Incomplete data. Mobile/Email and password are required."]);
 }
 ?>

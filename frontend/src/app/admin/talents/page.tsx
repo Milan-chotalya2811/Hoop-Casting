@@ -8,11 +8,12 @@ import { FaWhatsapp } from 'react-icons/fa'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { fixUrl } from '@/lib/utils'
 
 const PREDEFINED_CATEGORIES = [
-    'Actor', 'Model', 'Anchor', 'Videographer',
-    'Makeup Artist', 'Stylist', 'Art Direction', 'Set Designer',
-    'Voice Over', 'Dancer', 'Singer', 'Writer', 'Photographer'
+    'Actor', 'Anchor', 'Model', 'Makeup Artist', 'Stylist', 'Art Direction',
+    'Photographer', 'Videographer', 'Video Editor', 'Internship',
+    'Props Renting', 'Studio Renting', 'Set Designer', 'Other'
 ]
 
 function TalentManagementContent() {
@@ -39,6 +40,7 @@ function TalentManagementContent() {
             setFilter(filterParam as 'all' | 'hidden' | 'deleted')
         }
     }, [filterParam])
+
 
     useEffect(() => {
         fetchTalents()
@@ -124,10 +126,7 @@ function TalentManagementContent() {
 
     // Derived Lists for Filters
     // 1. Categories
-    const availableCategories = Array.from(new Set([
-        ...PREDEFINED_CATEGORIES,
-        ...talents.map(t => t.category).filter(Boolean)
-    ])).sort()
+    const availableCategories = PREDEFINED_CATEGORIES;
 
     // 2. Locations
     const availableLocations = Array.from(new Set(
@@ -151,7 +150,17 @@ function TalentManagementContent() {
             (t.city && t.city.toLowerCase() === locationFilter.toLowerCase())
             : true
 
-        return matchesSearch && matchesCategory && matchesLocation
+        // Status Filter
+        let matchesStatus = true;
+        if (filter === 'all') {
+            matchesStatus = !t.is_hidden && !t.deleted_at;
+        } else if (filter === 'hidden') {
+            matchesStatus = (t.is_hidden === 1 || t.is_hidden === true) && !t.deleted_at;
+        } else if (filter === 'deleted') {
+            matchesStatus = !!t.deleted_at;
+        }
+
+        return matchesSearch && matchesCategory && matchesLocation && matchesStatus
     })
 
     return (
@@ -246,6 +255,7 @@ function TalentManagementContent() {
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th>Photo</th>
                                 <th>Name / Email</th>
                                 <th>Category</th>
                                 <th>Location</th>
@@ -267,7 +277,15 @@ function TalentManagementContent() {
                                 filteredTalents.map((talent) => (
                                     <tr key={talent.id}>
                                         <td>
-                                            <div style={{ fontWeight: 600 }}>{talent.users?.name || talent.internal_name || 'Unknown'}</div>
+                                            <img
+                                                src={fixUrl(talent.profile_photo_url)}
+                                                style={{ width: 40, height: 40, borderRadius: '4px', objectFit: 'cover', objectPosition: 'top center' }}
+                                                alt="T"
+                                                onError={(e: any) => e.target.src = '/default_avatar.png'}
+                                            />
+                                        </td>
+                                        <td>
+                                            <div style={{ fontWeight: 600 }}>{talent.users?.name || talent.internal_name}</div>
                                             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>
                                                 {talent.users?.email || talent.internal_email}
                                             </div>

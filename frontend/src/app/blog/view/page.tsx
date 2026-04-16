@@ -23,7 +23,7 @@ function BlogContent() {
                 else if (id) url = `/blogs.php?id=${id}`
                 else return
 
-                const { data } = await api.get(url)
+                const { data } = await api.get(`${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`)
                 setBlog(data)
 
                 if (data) {

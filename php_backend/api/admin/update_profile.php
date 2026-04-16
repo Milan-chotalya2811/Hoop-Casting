@@ -87,25 +87,38 @@ $fields = [
 $update_parts = [];
 $params = [':id' => $profile_id];
 
-foreach ($fields as $field) {
-    if ($field === 'whatsapp_number' && isset($data[$field]) && !empty($data[$field])) {
-        if (!preg_match('/^[0-9]{10}$/', $data[$field])) {
-            http_response_code(400);
-            echo json_encode(["message" => "WhatsApp number must be exactly 10 digits."]);
-            exit();
-        }
-    }
+    $array_fields = ['languages', 'skills', 'past_work', 'portfolio_links', 'gallery_urls', 'interested_in', 'social_links', 'custom_fields'];
 
-    if (isset($data[$field])) {
-        $val = $data[$field];
-        if (is_array($val) || is_object($val)) {
-            $val = json_encode($val);
+    foreach ($fields as $field) {
+        if ($field === 'whatsapp_number' && isset($data[$field]) && !empty($data[$field])) {
+            if (!preg_match('/^[0-9]{10}$/', $data[$field])) {
+                http_response_code(400);
+                echo json_encode(["message" => "WhatsApp number must be exactly 10 digits."]);
+                exit();
+            }
         }
 
-        $update_parts[] = "$field = :$field";
-        $params[":$field"] = $val;
+        if (isset($data[$field])) {
+            $val = $data[$field];
+            
+            // Handle Array Fields
+            if (in_array($field, $array_fields)) {
+                if (is_array($val)) {
+                    $val = json_encode($val);
+                } elseif (is_string($val) && (strpos($val, '[') === 0 || strpos($val, '{') === 0)) {
+                    // Already a JSON string
+                }
+            } else {
+                // Non-array field
+                if (is_array($val)) {
+                    $val = !empty($val) ? reset($val) : '';
+                }
+            }
+
+            $update_parts[] = "$field = :$field";
+            $params[":$field"] = $val;
+        }
     }
-}
 
 // Also allow updating internal notes/status if needed (but currently frontend doesn't send them here)
 // Only proceed if there are updates

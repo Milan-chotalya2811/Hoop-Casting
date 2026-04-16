@@ -5,6 +5,7 @@ import api from '@/lib/api'
 import styles from './admin.module.css'
 import { Users, EyeOff, Trash2, FilePlus } from 'lucide-react'
 import Link from 'next/link'
+import { fixUrl } from '@/lib/utils'
 
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
@@ -92,10 +93,11 @@ function RecentTalentsTable() {
     const [recent, setRecent] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
+
     useEffect(() => {
         const fetchRecent = async () => {
             try {
-                const { data } = await api.get('/admin/talents.php?limit=50')
+                const { data } = await api.get(`/admin/talents.php?limit=50&t=${Date.now()}`)
                 if (data) {
                     const mapped = data.map((t: any) => ({
                         ...t,
@@ -120,6 +122,7 @@ function RecentTalentsTable() {
             <table className={styles.table}>
                 <thead>
                     <tr>
+                        <th style={{ width: '50px' }}>Photo</th>
                         <th>Name</th>
                         <th>Category</th>
                         <th>Created</th>
@@ -130,6 +133,14 @@ function RecentTalentsTable() {
                 <tbody>
                     {recent.map((t) => (
                         <tr key={t.id}>
+                            <td>
+                                <img 
+                                    src={fixUrl(t.profile_photo_url)} 
+                                    style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover', objectPosition: 'top center' }} 
+                                    alt="T"
+                                    onError={(e: any) => e.target.src = '/default_avatar.png'}
+                                />
+                            </td>
                             <td>
                                 <div style={{ fontWeight: 500 }}>{t.users?.name || 'Unknown'}</div>
                                 <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{t.users?.email}</div>

@@ -6,1372 +6,302 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import api, { uploadFile } from '@/lib/api'
 import styles from '@/components/Form.module.css'
-import { Save, ArrowLeft } from 'lucide-react'
+import { Save, ArrowLeft, Camera, Upload, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import GalleryModal from '@/components/GalleryModal'
+import { fixUrl, compressImage } from '@/lib/utils'
 
 const CATEGORIES = [
-    "Actor",
-    "Model",
-    "Anchor",
-    "Makeup Artist",
-    "Stylist",
-    "Art Direction",
-    "Photographer",
-    "Videographer",
-    "Video Editor",
-    "Internship in Acting",
-    "Internship in Modeling",
-    "Internship in Anchoring",
-    "Props Renting",
-    "Studio Renting",
-    "Set Designer"
+    "Actor", "Anchor", "Model", "Makeup Artist", "Stylist", "Art Direction",
+    "Photographer", "Videographer", "Video Editor", "Internship",
+    "Props Renting", "Studio Renting", "Set Designer", "Other"
 ]
 
+
 export default function EditProfile() {
-    const { user, loading } = useAuth()
+    const { user, loading, refreshAuth } = useAuth()
     const router = useRouter()
     const [submitting, setSubmitting] = useState(false)
-    const [message, setMessage] = useState('')
-    const [uploadProgress, setUploadProgress] = useState(0)
     const [isUploading, setIsUploading] = useState(false)
+    const [globalMessage, setGlobalMessage] = useState('')
+    const [fieldMessages, setFieldMessages] = useState<Record<string, {text: string, type: 'info' | 'error' | 'success'}>>({})
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-    // Profile State maps to DB columns
     const [profile, setProfile] = useState<any>({
-        // Standard Columns
-        city: '',
-        age: '',
-        dob: '',
-        whatsapp_number: '',
-        emergency_contact: '',
-        category: '',
-        bio: '',
-        skills: '',       // stored as array in DB but string in form temporarily? Or manage as string input
-        languages: '',    // same
-        portfolio_links: '',
-        past_brand_work: '',
-        agency_status: '',
-        pay_rates: '',
-        travel_surat: 'No',
-        content_rights_agreed: false,
-        chest_in: '',
-        waist_in: '',
-        hips_in: '',
-        skin_tone: '',
-        hair_color: '',
-        eye_color: '',
-        height_cm: '',
-        weight_kg: '',
-
-        // Legacy/Specific Columns that might still be used
-        profile_photo_url: '',
-        gallery_urls: [] as string[],
-        intro_video_url: '',
-        social_links: '', // "Personal Instagram"
-
-        // We'll stick to mapping Registration Form fields to these if they exist, else Custom
+        city: '', age: '', dob: '', whatsapp_number: '', category: '',
+        bio: '', skills: '', languages: '', portfolio_links: '',
+        past_brand_work: '', agency_status: '', pay_rates: '',
+        travel_surat: 'No', chest_in: '', waist_in: '', hips_in: '',
+        skin_tone: '', hair_color: '', eye_color: '',
+        height_cm: '', weight_kg: '',
+        profile_photo_url: '', gallery_urls: [], 
+        intro_video_url: '', social_links: '',
+        content_rights_agreed: false
     })
 
-    const [customValues, setCustomValues] = useState<Record<string, any>>({})
-
-    // Load Data
     useEffect(() => {
         if (user) {
             const loadData = async () => {
-                const { data } = await api.get('/profile.php')
-
-                if (data && data.category) { // Check if we actually got a profile, not just user info
-                    // Populate Profile State (Columns)
-                    setProfile({
-                        ...data,
-                        skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills || ''),
-                        languages: Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages || ''),
-                        portfolio_links: Array.isArray(data.portfolio_links) ? data.portfolio_links.join('\n') : (data.portfolio_links || ''),
-                        travel_surat: data.travel_surat ? 'Yes' : 'No', // Convert bool to Yes/No for select
-                        // Ensure defaults
-                        category: data.category || '',
-                        gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : (data.gallery_urls ? JSON.parse(data.gallery_urls) : [])
-                    })
-
-                    // Populate Custom Values
-                    // If custom_fields saved as JSON string in DB, parse it.
-                    if (data.custom_fields) {
-                        try {
-                            setCustomValues(typeof data.custom_fields === 'string' ? JSON.parse(data.custom_fields) : data.custom_fields)
-                        } catch (e) {
-                            setCustomValues({})
-                        }
+                try {
+                    const { data } = await api.get('/profile.php')
+                    if (data && data.category) {
+                        setProfile({
+                            ...data,
+                            travel_surat: (data.travel_surat === true || data.travel_surat === '1' || data.travel_surat === 1) ? 'Yes' : 'No',
+                            gallery_urls: Array.isArray(data.gallery_urls) ? data.gallery_urls : (typeof data.gallery_urls === 'string' ? JSON.parse(data.gallery_urls) : []),
+                            skills: Array.isArray(data.skills) ? data.skills.join(', ') : (data.skills === '[]' ? '' : (data.skills || '')),
+                            languages: Array.isArray(data.languages) ? data.languages.join(', ') : (data.languages === '[]' ? '' : (data.languages || '')),
+                        })
                     }
-                }
+                } catch (err) { console.error(err) }
             }
             loadData()
         }
     }, [user])
 
-    // Unified Change Handler
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, type } = e.target
-        let { value } = e.target
-
-        // Validation for WhatsApp Number (10 digits only)
-        if (name === 'whatsapp_number') {
-            value = value.replace(/[^0-9]/g, '').slice(0, 10);
-        }
-
-        // Define which fields map to ACTUAL Columns in talent_profiles
-        // Note: 'height', 'weight' from Reg form are often text (5'10), but DB might have numeric height_cm. 
-        // For simplicity/robustness, I will map Reg Form specific names to columns if they match, else Custom.
-
-        const columnFields = [
-            'category', 'city', 'age', 'dob', 'whatsapp_number', 'emergency_contact',
-            'bio', 'skills', 'languages', 'portfolio_links', 'past_brand_work',
-            'agency_status', 'pay_rates', 'intro_video_url', 'profile_photo_url',
-            'social_links', 'content_rights_agreed', 'years_experience', 'gallery_urls',
-            'chest_in', 'waist_in', 'hips_in', 'skin_tone', 'hair_color', 'eye_color', 'height_cm', 'weight_kg'
-        ]
-
-        // Special handling for checkboxes/travel_surat
-        if (name === 'travel_surat') {
-            setProfile((prev: any) => ({ ...prev, [name]: value }))
-            return
-        }
-
-        // Checkboxes in custom fields?
-        if (type === 'checkbox') {
-            // Handle rights agreement specifically
-            if (name === 'content_rights_agreed') {
-                setProfile((prev: any) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
-                return
-            }
-            // Other checkboxes -> Custom
-            setCustomValues(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }))
-            return
-        }
-
-        if (columnFields.includes(name)) {
-            setProfile((prev: any) => ({ ...prev, [name]: value }))
-        } else {
-            // It's a custom field (like 'studioType', 'height' if treated as text, etc)
-            setCustomValues(prev => ({ ...prev, [name]: value }))
-        }
-    }
-
-    const handleFileUpload = async (e: any, fieldName: string, isCustom = false) => {
-        const file = e.target.files[0]
-        if (!file) return
-
+    const handleFileUpload = async (e: any, fieldName: string) => {
+        const files = Array.from(e.target.files as FileList)
+        if (!files.length) return
+        
         try {
-            setSubmitting(true)
-            setIsUploading(true)
-            setMessage('Starting upload...')
-            setUploadProgress(0)
-
-            // Face Detection & Cropping for Profile Photos
-            let fileToUpload = file
-            if (fieldName === 'profile_photo_url') {
-                setMessage('Detecting face and optimizing image...')
-                try {
-                    const { cropToFace } = await import('@/utils/faceCrop')
-                    const croppedBlob = await cropToFace(file)
-                    fileToUpload = new File([croppedBlob], file.name, { type: file.type })
-                    setMessage('Face detected. Uploading optimized image...')
-                } catch (cropError) {
-                    console.error('Face detection error:', cropError)
-                    setMessage('Face detection warning: proceeding with original image...')
+            setSubmitting(true); setIsUploading(true)
+            setFieldMessages(prev => ({ ...prev, [fieldName]: { text: `Uploading ${files.length} Item(s)...`, type: 'info' } }))
+            
+            if (fieldName === 'gallery_urls') {
+                const uploadedUrls: string[] = []
+                for (const file of files) {
+                    const compressedFile = await compressImage(file) as File
+                    const response = await uploadFile(compressedFile)
+                    uploadedUrls.push(response.url)
                 }
-            }
-
-            const response = await uploadFile(fileToUpload, (percent: number) => {
-                setUploadProgress(percent)
-                setMessage(`Uploading: ${percent}%`)
-            })
-
-            // Construct full URL if response is relative
-            // Assuming BACKEND is same host as API but without /api
-            // Ideally we need an env var for ASSET_URL. 
-            // For now, let's use the API_BASE_URL logic or just store what is returned if it's full path.
-            // If upload.php returns "/uploads/file.jpg", we need to prepend the domain.
-            // Let's assume standard PHP setup: http://localhost/php_backend/uploads/...
-
-            let publicUrl = response.url
-            if (publicUrl.startsWith('/')) {
-                // HACK: Hardcoded for localhost testing, user should configure this.
-                // If API path is http://localhost/php_backend/api, then root is http://localhost/php_backend
-                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/php_backend/api';
-                const root = apiBase.replace('/api', '');
-                publicUrl = root + publicUrl;
-            }
-
-            if (isCustom) {
-                setCustomValues(prev => ({ ...prev, [fieldName]: publicUrl }))
+                setProfile((prev: any) => ({ ...prev, gallery_urls: [...(prev.gallery_urls || []), ...uploadedUrls] }))
+                setFieldMessages(prev => ({ ...prev, [fieldName]: { text: `Successfully Added ${files.length} Item(s)!`, type: 'success' } }))
             } else {
+                const file = files[0]
+                const compressedFile = await compressImage(file) as File
+                const response = await uploadFile(compressedFile)
+                const publicUrl = response.url
                 setProfile((prev: any) => ({ ...prev, [fieldName]: publicUrl }))
+                
+                if (fieldName === 'profile_photo_url') {
+                   setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Syncing DB...', type: 'info' } }))
+                   await api.post('/profile.php', { ...profile, profile_photo_url: publicUrl, content_rights_agreed: profile.content_rights_agreed ? 1 : 0 });
+                   await refreshAuth()
+                }
+                setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Uploaded!', type: 'success' } }))
             }
-
-            setMessage('File uploaded successfully')
         } catch (err: any) {
-            console.error(err)
-            setMessage('Upload error: ' + (err.response?.data?.message || err.message))
-        } finally {
-            setSubmitting(false)
-            setIsUploading(false)
-            setUploadProgress(0)
-        }
+            setFieldMessages(prev => ({ ...prev, [fieldName]: { text: 'Error: ' + err.message, type: 'error' } }))
+        } finally { setSubmitting(false); setIsUploading(false) }
     }
 
-    const handleGalleryUpload = async (e: any) => {
-        const file = e.target.files[0]
-        if (!file) return
-
-        try {
-            setSubmitting(true)
-            setIsUploading(true)
-            setMessage('Uploading gallery item...')
-            setUploadProgress(0)
-
-            const response = await uploadFile(file, (percent: number) => {
-                setUploadProgress(percent)
-                setMessage(`Uploading Gallery Item: ${percent}%`)
-            })
-
-            let publicUrl = response.url
-            if (publicUrl.startsWith('/')) {
-                const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/php_backend/api';
-                const root = apiBase.replace('/api', '');
-                publicUrl = root + publicUrl;
-            }
-
-            setProfile((prev: any) => ({
-                ...prev,
-                gallery_urls: [...(prev.gallery_urls || []), publicUrl]
-            }))
-
-            setMessage('Item added to gallery')
-        } catch (err: any) {
-            console.error(err)
-            setMessage('Upload error: ' + (err.response?.data?.message || err.message))
-        } finally {
-            setSubmitting(false)
-            setIsUploading(false)
-            setUploadProgress(0)
-        }
-    }
-
-    const removeGalleryItem = (index: number) => {
-        setProfile((prev: any) => ({
-            ...prev,
-            gallery_urls: prev.gallery_urls.filter((_: any, i: number) => i !== index)
-        }))
-    }
-
-    const GallerySection = () => (
-        <>
-            <SectionTitle title="Gallery (Photos & Videos)" />
-            <div className={styles.formGroup}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '10px', marginBottom: '15px' }}>
-                    {profile.gallery_urls && profile.gallery_urls.map((url: string, i: number) => (
-                        <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ccc', background: '#000' }}>
-                            {url.match(/\.(mp4|webm|ogg|mov)$/i) ? (
-                                <video src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <img src={url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Gallery Item" />
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => removeGalleryItem(i)}
-                                style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,0.5)', color: '#fff', borderRadius: '50%', width: 24, height: 24, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            >
-                                &times;
-                            </button>
-                        </div>
-                    ))}
-                    <div style={{ aspectRatio: '1', border: '2px dashed #ccc', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', background: 'var(--surface)' }}>
-                        <span style={{ fontSize: '2rem', color: 'var(--primary)' }}>+</span>
-                        <input type="file" onChange={handleGalleryUpload} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} accept="image/*,video/*" />
-                    </div>
-                </div>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Upload photos and videos to showcase your work.</p>
-            </div>
-        </>
-    )
-
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault()
-        if (isUploading) {
-            alert('Please wait for file uploads to complete.')
-            return
-        }
         setSubmitting(true)
-        setMessage('')
-
         try {
-            if (!profile.category) throw new Error("Please select a category")
-            if (!profile.content_rights_agreed) throw new Error("Please agree to the content rights.")
-
-            // Prepare Payload
-            // Data to send to PHP API
-            // Note: DB structure in PHP uses different handling for arrays (expecting strings or handled JSON)
-            // But we can send JSON and PHP will handle it or we stringify here.
-            // My PHP profile.php expects JSON body and maps fields.
-
-            const payload: any = {
-                // user_id is handled by token in backend
-
-                // Mapped Columns
-                city: profile.city,
-                category: profile.category,
-                whatsapp_number: profile.whatsapp_number,
-                emergency_contact: profile.emergency_contact,
-                bio: profile.bio,
-                past_brand_work: profile.past_brand_work,
-                agency_status: profile.agency_status,
-                pay_rates: profile.pay_rates,
+            await api.post('/profile.php', {
+                ...profile,
                 travel_surat: profile.travel_surat === 'Yes',
-                content_rights_agreed: profile.content_rights_agreed ? 1 : 0, // PHP boolean often tinyint
-
-                // Conversions
-                age: profile.age ? parseInt(profile.age) : null,
-                dob: profile.dob || null,
-                // PHP API expects arrays as JSON or strings? 
-                // profile.php: if (is_array($val)) $val = json_encode($val);
-                // So we can send arrays naturally.
+                content_rights_agreed: profile.content_rights_agreed ? 1 : 0,
                 skills: (profile.skills || '').split(',').map((s: string) => s.trim()).filter(Boolean),
                 languages: (profile.languages || '').split(',').map((s: string) => s.trim()).filter(Boolean),
-                portfolio_links: (profile.portfolio_links || '').split('\n').map((s: string) => s.trim()).filter(Boolean),
-
-                // Media
-                profile_photo_url: profile.profile_photo_url,
-                gallery_urls: profile.gallery_urls || [],
-                intro_video_url: profile.intro_video_url,
-                social_links: profile.social_links || customValues.socialProfile,
-
-                // Custom fields
-                custom_fields: customValues
-            }
-
-            // Sync certain Custom fields to Columns if missed
-            if (customValues.socialProfile) payload.social_links = customValues.socialProfile
-            if (customValues.videoProfile) payload.intro_video_url = customValues.videoProfile
-
-            // Map physical stats
-            payload.height_cm = profile.height_cm ? parseFloat(profile.height_cm) : null
-            payload.weight_kg = profile.weight_kg ? parseFloat(profile.weight_kg) : null
-            payload.chest_in = profile.chest_in ? parseFloat(profile.chest_in) : null
-            payload.waist_in = profile.waist_in ? parseFloat(profile.waist_in) : null
-            payload.hips_in = profile.hips_in ? parseFloat(profile.hips_in) : null
-            payload.skin_tone = profile.skin_tone
-            payload.hair_color = profile.hair_color
-            payload.eye_color = profile.eye_color
-
-            await api.post('/profile.php', payload)
-
-            setMessage('Profile updated successfully!')
-            // Optional: Redirect
-            setTimeout(() => router.push('/profile'), 1000)
-
-        } catch (err: any) {
-            console.error(err)
-            setMessage('Error: ' + err.message)
-        } finally {
-            setSubmitting(false)
-        }
+            })
+            await refreshAuth()
+            setGlobalMessage('Profile Saved! Redirecting...')
+            setTimeout(() => {
+                router.push('/profile')
+            }, 1000)
+        } catch (err: any) { setGlobalMessage('Error saving.') }
+        finally { setSubmitting(false) }
     }
 
-    const selectedCategory = profile.category
-
-    if (loading) return <div className="container section">Loading...</div>
-    if (!user) { router.push('/login'); return null }
+    if (loading) return <div>Loading...</div>
+    if (!user) return null
 
     return (
         <div className="container section" style={{ paddingTop: '140px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-                <Link href="/profile" className="btn btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <ArrowLeft size={16} /> Back
-                </Link>
-                <h1 style={{ fontSize: '2rem', color: 'var(--primary)' }}>Edit Profile</h1>
+                <Link href="/profile" className="btn btn-outline"><ArrowLeft size={16} /> Back</Link>
+                <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#000' }}>Edit Profile</h1>
             </div>
 
-            <div className={styles.card} style={{ maxWidth: '100%' }}>
-                {message && (
-                    <div style={{
-                        padding: '15px',
-                        marginBottom: '20px',
-                        borderRadius: '8px',
-                        background: message.startsWith('Error') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
-                        color: message.startsWith('Error') ? 'var(--error)' : 'var(--success)',
-                        border: `1px solid ${message.startsWith('Error') ? 'var(--error)' : 'var(--success)'}`
-                    }}>
-                        {message}
-                    </div>
-                )}
+            <div className={styles.card} style={{ maxWidth: '100%', border: '1px solid #000', padding: '30px', background: '#fff' }}>
 
                 <form onSubmit={handleSubmit}>
-
-                    {/* 1. CATEGORY SELECTION FIRST */}
-                    <div className={styles.formGroup} style={{ marginBottom: '30px' }}>
-                        <label style={{ fontSize: '1.2rem', color: 'var(--primary)' }}>Select Your Category</label>
-                        <select
-                            name="category"
-                            className={styles.select}
-                            value={profile.category ?? ''}
-                            onChange={handleChange}
-                            style={{ fontSize: '1.2rem', padding: '15px' }}
-                        >
-                            <option value="">-- Click to Select Category --</option>
-                            {CATEGORIES.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
-                            ))}
+                    <div className={styles.formGroup} style={{ marginBottom: '40px' }}>
+                        <label style={{ fontSize: '1.1rem', color: '#000', fontWeight: 'bold' }}>Talent Category</label>
+                        <select name="category" className={styles.select} value={profile.category} onChange={(e) => setProfile({...profile, category: e.target.value})} style={{ border: '1px solid #000', color: '#000', width: '100%' }}>
+                            <option value="">-- Select Category --</option>
+                            {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                         </select>
                     </div>
 
-                    {/* 2. DYNAMIC FORM BASED ON CATEGORY */}
                     <AnimatePresence mode="wait">
-                        {selectedCategory && (
-                            <motion.div
-                                key={selectedCategory}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {/* ACTOR / MODEL / ANCHOR FORM */}
-                                {["Actor", "Model", "Anchor"].includes(selectedCategory) && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project/reel)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Personal Stats & Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                                            <Field name="dob" label="Date of Birth" type="date" value={profile.dob} onChange={handleChange} />
-                                        </div>
-
-                                        <h4 style={{ marginTop: '20px', marginBottom: '15px', color: 'var(--text-muted)' }}>Physical Stats</h4>
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
-                                            <Field name="height_cm" label="Height (cm)" type="number" value={profile.height_cm} onChange={handleChange} />
-                                            <Field name="weight_kg" label="Weight (kg)" type="number" value={profile.weight_kg} onChange={handleChange} />
-                                            <Field name="chest_in" label="Chest/Bust (in)" value={profile.chest_in} onChange={handleChange} />
-                                            <Field name="waist_in" label="Waist (in)" value={profile.waist_in} onChange={handleChange} />
-                                            <Field name="hips_in" label="Hips (in)" value={profile.hips_in} onChange={handleChange} />
-                                            <Field name="skin_tone" label="Skin Tone" value={profile.skin_tone} onChange={handleChange} />
-                                            <Field name="eye_color" label="Eye Color" value={profile.eye_color} onChange={handleChange} />
-                                            <Field name="hair_color" label="Hair Color" value={profile.hair_color} onChange={handleChange} />
-                                        </div>
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '30px' }}>
-                                            <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="intro_video_url" label="Your Video Profile Link" value={profile.intro_video_url} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Work Experience (Years)</label>
-                                                <input
-                                                    type="number"
-                                                    name="years_experience"
-                                                    className={styles.input}
-                                                    value={profile.years_experience || 0}
-                                                    onChange={handleChange}
-                                                    min="0"
-                                                    step="0.5"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="projectTypes" label="Preferred Project Types" value={customValues.projectTypes} onChange={handleChange} />
-                                            <Field name="skills" label="Skills (Dancing, Singing, etc.)" value={profile.skills} onChange={handleChange} />
-                                            <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-                                        </div>
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px' }}>Upload a clear face picture.</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Makeup Artist */}
-                                {selectedCategory === "Makeup Artist" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Specific Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="workExperience" label="Work Experience (in years)" value={customValues.workExperience} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Select name="indoorOutdoor" label="Are you comfortable with both indoor and outdoor shoots?" options={["Yes", "No", "Indoor Only", "Outdoor Only"]} value={customValues.indoorOutdoor} onChange={handleChange} />
-                                            <Select name="maleFemaleMakeup" label="Are you comfortable doing makeup for both male and female artists?" options={["Both", "Female Only", "Male Only"]} value={customValues.maleFemaleMakeup} onChange={handleChange} />
-                                            <Select name="hairStyling" label="Do you provide hair styling along with makeup?" options={["Yes", "No", "Basic Only"]} value={customValues.hairStyling} onChange={handleChange} />
-                                        </div>
-
-                                        <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Stylist */}
-                                {selectedCategory === "Stylist" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Specific Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                                            <Field name="weight_kg" label="Weight (kg)" type="number" value={profile.weight_kg} onChange={handleChange} />
-                                            <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="workExperience" label="Work Experience (Years)" value={customValues.workExperience} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="projectTypes" label="Project Types" value={customValues.projectTypes} onChange={handleChange} />
-                                            <Field name="skills" label="Skills (Dancing, Singing, etc.)" value={profile.skills} onChange={handleChange} />
-                                            <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-                                        </div>
-
-                                        {/* Disclaimer at bottom as per pattern */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Art Director */}
-                                {selectedCategory === "Art Direction" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Specific Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                                            <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Work Experience (Years)</label>
-                                                <input
-                                                    type="number"
-                                                    name="years_experience"
-                                                    className={styles.input}
-                                                    value={profile.years_experience || 0}
-                                                    onChange={handleChange}
-                                                    min="0"
-                                                    step="0.5"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="projectTypes" label="Project Types" value={customValues.projectTypes} onChange={handleChange} />
-                                            <Select name="studioLocation" label="Are you comfortable working with both studio and on-location shoots?" options={["Yes", "No", "Studio Only", "Location Only"]} value={customValues.studioLocation} onChange={handleChange} />
-                                            <Select name="conceptSketches" label="Do you provide visual concept sketches or mood boards before the shoot?" options={["Yes", "No", "Upon Request"]} value={customValues.conceptSketches} onChange={handleChange} />
-                                            <Field name="lastMinuteChanges" label="How do you manage last-minute changes on set?" type="textarea" value={customValues.lastMinuteChanges} onChange={handleChange} />
-                                        </div>
-
-                                        <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Photographer / Videographer / Internships */}
-                                {["Photographer", "Videographer", "Internship in Acting", "Internship in Modeling", "Internship in Anchoring"].includes(selectedCategory) && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Specific Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="age" label="Age" type="number" value={profile.age} onChange={handleChange} />
-                                            <Field name="dob" label="Date of Birth" type="date" value={profile.dob} onChange={handleChange} />
-                                            <Field name="languages" label="Languages you know" value={profile.languages} onChange={handleChange} />
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="workExperience" label="Work Experience (in years)" value={customValues.workExperience} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="projectTypes" label="Project Types" value={customValues.projectTypes} onChange={handleChange} />
-                                            <Field name="skills" label="Skills" value={profile.skills} onChange={handleChange} />
-                                            <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-                                        </div>
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Video Editor (Specific subset) */}
-                                {selectedCategory === "Video Editor" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Specific Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            {/* Age Removed */}
-                                            <Field name="dob" label="Date of Birth" type="date" value={profile.dob} onChange={handleChange} />
-                                            {/* Languages Removed */}
-                                            <Field name="social_links" label="Personal Instagram / Social Link" value={profile.social_links} onChange={handleChange} />
-                                            <Field name="workExperience" label="Work Experience (in years)" value={customValues.workExperience} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="projectTypes" label="Project Types" value={customValues.projectTypes} onChange={handleChange} />
-                                            {/* Skills Removed */}
-                                            <Field name="bio" label="Bio / About Yourself" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-                                        </div>
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Props Renting */}
-                                {selectedCategory === "Props Renting" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>What are your rental charges per day or per item?</label>
-                                                <input className={styles.input} type="text" name="pay_rates" value={profile.pay_rates ?? ''} onChange={handleChange} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Prop Details & Services" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Select name="ownInventory" label="Do you have your own inventory of props?" options={["Yes", "No", "Partial"]} value={customValues.ownInventory} onChange={handleChange} />
-                                            <Select name="propsDelivery" label="Do you deliver props to the shoot location?" options={["Yes", "No", "Chargeable"]} value={customValues.propsDelivery} onChange={handleChange} />
-                                            <Select name="setupPickup" label="Do you provide setup and pick-up services?" options={["Yes", "No", "Extra Charge"]} value={customValues.setupPickup} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Field name="propsTypes" label="What types of props do you usually provide?" type="textarea" value={customValues.propsTypes} onChange={handleChange} placeholder="e.g. Vintage furniture, Modern decor, Electronics..." />
-                                            <Select name="propsStyles" label="Are your props available in multiple styles or themes?" options={["Yes", "No", "Depends on Request"]} value={customValues.propsStyles} onChange={handleChange} />
-                                            <Select name="propsMaintenance" label="Do you maintain props in shoot-ready condition (cleaning/repairs)?" options={["Yes", "No"]} value={customValues.propsMaintenance} onChange={handleChange} />
-                                        </div>
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile / Inventory Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Studio Renting */}
-                                {selectedCategory === "Studio Renting" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required maxLength={10} minLength={10} pattern="[0-9]{10}" />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>What are your rental charges per day or per hour?</label>
-                                                <input className={styles.input} type="text" name="pay_rates" value={profile.pay_rates ?? ''} onChange={handleChange} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Studio Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="emergency_contact" label="Emergency Contact (Optional)" value={profile.emergency_contact} onChange={handleChange} />
-                                            <Field name="workExperience" label="How many years have you been renting out studios?" value={customValues.workExperience} onChange={handleChange} />
-                                            <Field name="studioType" label="What type of studio do you provide?" value={customValues.studioType} onChange={handleChange} placeholder="e.g. Daylight, Chroma, Soundproof..." />
-                                            <Field name="studioSize" label="What is the usual studio area / size?" value={customValues.studioSize} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Select name="studioEquipment" label="Do you provide lighting, props, and equipment along with the studio?" options={["Yes", "No", "Extra Charge"]} value={customValues.studioEquipment} onChange={handleChange} />
-                                            <Select name="studioParking" label="Do you provide parking and easy access for crew and equipment?" options={["Yes", "No", "Limited"]} value={customValues.studioParking} onChange={handleChange} />
-                                            <Select name="studioFacilities" label="Do you have air conditioning, power backup, and other essential facilities?" options={["Yes", "No", "Partial"]} value={customValues.studioFacilities} onChange={handleChange} />
-                                            <Select name="studioRules" label="Do you allow food, makeup, and prop setup inside the studio?" options={["Yes", "No", "Restricted Area"]} value={customValues.studioRules} onChange={handleChange} />
-                                            <Select name="studioCustomSetups" label="Are you open to customized setups or themed shoots?" options={["Yes", "No", "Discuss First"]} value={customValues.studioCustomSetups} onChange={handleChange} />
-                                        </div>
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile / Studio Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Set Designer */}
-                                {selectedCategory === "Set Designer" && (
-                                    <>
-                                        <SectionTitle title="Personal & Contact Details" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Email Address</label>
-                                                <input type="text" value={user.email || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <div className={styles.formGroup}>
-                                                <label>Full Name</label>
-                                                <input type="text" value={user.name || ''} disabled style={{ opacity: 0.7, background: 'var(--surface)' }} />
-                                            </div>
-                                            <Field name="whatsapp_number" label="WhatsApp Number" value={profile.whatsapp_number} onChange={handleChange} placeholder="+91..." required />
-                                            <Field name="city" label="Current City / Location" value={profile.city} onChange={handleChange} required />
-                                        </div>
-
-                                        <SectionTitle title="Work & Experience" />
-                                        <div className={styles.formGroup}>
-                                            <label>Relevant Work Links (Drive, Insta, YouTube, Website)</label>
-                                            <textarea name="portfolio_links" className={styles.textarea} rows={3} value={profile.portfolio_links} onChange={handleChange} placeholder="Paste links here..." />
-                                        </div>
-
-                                        <Field name="past_brand_work" label="Have you worked with any brands/agencies? (List them)" value={profile.past_brand_work} onChange={handleChange} />
-
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginTop: '20px' }}>
-                                            <div className={styles.formGroup}>
-                                                <label>Do you work independently or through an agency?</label>
-                                                <select name="agency_status" className={styles.select} value={profile.agency_status ?? ''} onChange={handleChange}>
-                                                    <option value="">Select...</option>
-                                                    <option value="Independent">Independent</option>
-                                                    <option value="Agency">Agency Signed</option>
-                                                </select>
-                                            </div>
-                                            <Field name="pay_rates" label="Charges (per day/project)" value={profile.pay_rates} onChange={handleChange} />
-                                            <div className={styles.formGroup}>
-                                                <label>Can you travel to Surat for shoots?</label>
-                                                <select name="travel_surat" className={styles.select} value={profile.travel_surat ?? ''} onChange={handleChange}>
-                                                    <option value="Yes">Yes</option>
-                                                    <option value="No">No</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <SectionTitle title="Design Expertise" />
-                                        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                                            <Field name="workExperience" label="How many years of experience do you have in set designing?" value={customValues.workExperience} onChange={handleChange} />
-                                            <Select name="setPropsHandler" label="Do you handle props, furniture, and decor as part of your set design?" options={["Yes", "No", "Partial"]} value={customValues.setPropsHandler} onChange={handleChange} />
-                                            <Select name="setIndoorOutdoor" label="Are you comfortable designing sets for indoor and outdoor shoots?" options={["Both", "Indoor Only", "Outdoor Only"]} value={customValues.setIndoorOutdoor} onChange={handleChange} />
-                                            <Select name="setVisuals" label="Do you provide 3D sketches, mood boards, or visual concepts before execution?" options={["Yes", "No", "Upon Request"]} value={customValues.setVisuals} onChange={handleChange} />
-                                        </div>
-
-                                        <div style={{ marginTop: '20px' }}>
-                                            <Select name="setBudget" label="Can you work within a budget and source materials accordingly?" options={["Yes", "No"]} value={customValues.setBudget} onChange={handleChange} />
-                                            <Select name="setInstallation" label="Do you handle set installation and dismantling yourself or coordinate a team?" options={["Use My Team", "Myself", "Coordinate with Production"]} value={customValues.setInstallation} onChange={handleChange} />
-                                            <Select name="setCollaboration" label="Are you comfortable collaborating with photographers, stylists, and art directors?" options={["Yes", "No"]} value={customValues.setCollaboration} onChange={handleChange} />
-                                        </div>
-
-                                        {/* Disclaimer */}
-                                        <div style={{ padding: '20px', background: 'rgba(255, 190, 11, 0.1)', borderRadius: '8px', border: '1px solid var(--primary)', margin: '30px 0' }}>
-                                            <label style={{ display: 'flex', gap: '15px', cursor: 'pointer', alignItems: 'flex-start' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                    style={{ width: '24px', height: '24px', flexShrink: 0 }}
-                                                />
-                                                <span style={{ fontSize: '1rem', lineHeight: 1.5 }}>
-                                                    <strong>Important:</strong> I acknowledge that <strong>Monkey Ads</strong> holds exclusive, perpetual ownership and usage rights for all content produced during our collaboration, across all media and platforms.
-                                                </span>
-                                            </label>
-                                        </div>
-
-                                        <SectionTitle title="Profile / Work Photo" />
-                                        <div className={styles.formGroup}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                {profile.profile_photo_url ? (
-                                                    <img src={profile.profile_photo_url} style={{ width: 100, height: 100, borderRadius: '12px', objectFit: 'cover', objectPosition: 'top' }} alt="Profile" />
-                                                ) : <div style={{ width: 100, height: 100, background: '#333', borderRadius: '12px' }}></div>}
-                                                <div>
-                                                    <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <GallerySection />
-                                    </>
-                                )}
-
-                                {/* Other Categories (Remainder) */}
-                                {!["Actor", "Model", "Anchor", "Makeup Artist", "Stylist", "Art Direction", "Photographer", "Video Editor", "Videographer", "Internship in Acting", "Internship in Modeling", "Internship in Anchoring", "Props Renting", "Studio Renting", "Set Designer"].includes(selectedCategory) && (
-                                    <>
-                                        <Field name="bio" label="Bio / Description" type="textarea" value={profile.bio} onChange={handleChange} fullWidth />
-                                        <SectionTitle title="Photos & Media" />
-                                        <div className={styles.formGroup}>
-                                            <label>Profile Photo</label>
-                                            <input type="file" onChange={(e) => handleFileUpload(e, 'profile_photo_url')} />
-                                        </div>
-                                        <div style={{ marginTop: '20px' }}>
-                                            <label style={{ display: 'flex', gap: '10px', cursor: 'pointer' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="content_rights_agreed"
-                                                    checked={profile.content_rights_agreed}
-                                                    onChange={handleChange}
-                                                />
-                                                <span>I acknowledge that Monkey Ads holds exclusive rights for content produced.</span>
-                                            </label>
-                                        </div>
-                                    </>
-                                )}
-                                <div style={{ marginTop: '40px' }}>
-                                    {isUploading && (
-                                        <div style={{ marginBottom: '15px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                                <span>Uploading...</span>
-                                                <span>{uploadProgress}%</span>
-                                            </div>
-                                            <div style={{ width: '100%', height: '6px', background: 'var(--surface-highlight)', borderRadius: '3px', overflow: 'hidden' }}>
-                                                <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.2s' }}></div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '16px', fontSize: '1.2rem' }} disabled={submitting || isUploading}>
-                                        {isUploading ? `Uploading Media (${uploadProgress}%)` : (submitting ? 'Saving Profile...' : 'Save Profile')} <Save size={20} style={{ marginLeft: '10px' }} />
-                                    </button>
+                        {profile.category && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                
+                                <SectionTitle title="Personal Details" />
+                                <div className="grid">
+                                    <Field label="Full Name" value={user.name} disabled />
+                                    <Field label="WhatsApp Number" value={profile.whatsapp_number} onChange={(e: any) => setProfile({...profile, whatsapp_number: e.target.value})} required maxLength={10} />
+                                    <Field label="City" value={profile.city} onChange={(e: any) => setProfile({...profile, city: e.target.value})} required />
                                 </div>
+
+                                <SectionTitle title="Measurements & Physical" />
+                                <div className="grid-measure">
+                                    <Field label="Age" type="number" value={profile.age} onChange={(e: any) => setProfile({...profile, age: e.target.value})} />
+                                    <Field label="Height (cm)" type="number" value={profile.height_cm} onChange={(e: any) => setProfile({...profile, height_cm: e.target.value})} />
+                                    <Field label="Weight (kg)" type="number" value={profile.weight_kg} onChange={(e: any) => setProfile({...profile, weight_kg: e.target.value})} />
+                                    <Field label="Chest" value={profile.chest_in} onChange={(e: any) => setProfile({...profile, chest_in: e.target.value})} />
+                                    <Field label="Waist" value={profile.waist_in} onChange={(e: any) => setProfile({...profile, waist_in: e.target.value})} />
+                                    <Field label="Hips" value={profile.hips_in} onChange={(e: any) => setProfile({...profile, hips_in: e.target.value})} />
+                                    <Field label="Skin Tone" value={profile.skin_tone} onChange={(e: any) => setProfile({...profile, skin_tone: e.target.value})} />
+                                    <Field label="Hair Color" value={profile.hair_color} onChange={(e: any) => setProfile({...profile, hair_color: e.target.value})} />
+                                    <Field label="Eye Color" value={profile.eye_color} onChange={(e: any) => setProfile({...profile, eye_color: e.target.value})} />
+                                </div>
+
+                                <SectionTitle title="Professional Info" />
+                                <div className="grid">
+                                    <Field label="Bio / Professional Summary" type="textarea" value={profile.bio} onChange={(e: any) => setProfile({...profile, bio: e.target.value})} />
+                                    <Field label="Skills (comma separated)" value={profile.skills} onChange={(e: any) => setProfile({...profile, skills: e.target.value})} />
+                                    <Field label="Languages" value={profile.languages} onChange={(e: any) => setProfile({...profile, languages: e.target.value})} />
+                                    <Field label="Daily/Project Rate" value={profile.pay_rates} onChange={(e: any) => setProfile({...profile, pay_rates: e.target.value})} />
+                                    <div className={styles.formGroup}>
+                                        <label style={{color: '#000', fontWeight: 'bold'}}>Travel to Surat?</label>
+                                        <select value={profile.travel_surat} onChange={(e) => setProfile({...profile, travel_surat: e.target.value})} style={{width: '100%', padding: '12px', border: '1px solid #000', borderRadius: '12px', color: '#000'}}>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <SectionTitle title="Social & Links" />
+                                <div className="grid">
+                                    <Field label="Instagram/Social Link" value={profile.social_links} onChange={(e: any) => setProfile({...profile, social_links: e.target.value})} />
+                                    <Field label="Intro Video URL" value={profile.intro_video_url} onChange={(e: any) => setProfile({...profile, intro_video_url: e.target.value})} />
+                                    <Field label="Portfolio/Reel Links" type="textarea" value={profile.portfolio_links} onChange={(e: any) => setProfile({...profile, portfolio_links: e.target.value})} />
+                                </div>
+
+                                {/* MEDIA SECTION AT THE END */}
+                                <SectionTitle title="Media Portfolio" />
+                                <ProfilePhotoSection url={profile.profile_photo_url} onUpload={(e: any) => handleFileUpload(e, 'profile_photo_url')} status={fieldMessages.profile_photo_url} />
+                                <GalleryUploadSection items={profile.gallery_urls} onUpload={(e: any) => handleFileUpload(e, 'gallery_urls')} onRemove={(i: number) => setProfile({...profile, gallery_urls: profile.gallery_urls.filter((_: any, idx: number) => idx !== i)})} onPreview={setPreviewUrl} status={fieldMessages.gallery_urls} />
+
+                                <div style={{ padding: '24px', background: '#f9f9f9', borderRadius: '16px', border: '1px solid #000', margin: '40px 0' }}>
+                                    <label style={{ display: 'flex', gap: '16px', cursor: 'pointer', color: '#000' }}>
+                                        <input type="checkbox" checked={profile.content_rights_agreed} onChange={(e) => setProfile({...profile, content_rights_agreed: e.target.checked})} style={{ width: 22, height: 22 }} required />
+                                        <div style={{ fontSize: '0.95rem' }}><strong>Agreement:</strong> I acknowledge Monkey Ads holds ownership for produced content.</div>
+                                    </label>
+                                </div>
+
+                                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '20px', borderRadius: '16px', fontWeight: 'bold' }} disabled={submitting || isUploading}>
+                                    Save All Changes
+                                </button>
+                                {globalMessage && (
+                                    <div style={{ marginTop: '20px', padding: '15px', background: '#dcfce7', color: '#16a34a', borderRadius: '12px', textAlign: 'center', fontWeight: 'bold', border: '1px solid currentColor' }}>
+                                        {globalMessage}
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </form>
             </div>
-        </div >
+            
+            <GalleryModal isOpen={!!previewUrl} url={previewUrl} onClose={() => setPreviewUrl(null)} />
+
+            <style jsx global>{` 
+                .gallery-grid {
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+                    gap: 15px !important;
+                    margin-top: 15px;
+                }
+                .gallery-item {
+                    aspect-ratio: 1;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    border: 1px solid #000;
+                    position: relative;
+                }
+                .gallery-add-item {
+                    aspect-ratio: 1;
+                    border: 2px dashed #000;
+                    border-radius: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    background: #fafafa;
+                    cursor: pointer;
+                }
+                @media (max-width: 768px) {
+                    .gallery-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
+                }
+                @media (max-width: 480px) {
+                    .gallery-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+                }
+            `}</style>
+        </div>
     )
 }
 
 function SectionTitle({ title }: { title: string }) {
-    return <h3 className="gold-text" style={{
-        marginTop: '30px',
-        marginBottom: '20px',
-        paddingBottom: '10px',
-        borderBottom: '1px solid var(--border)',
-        fontSize: '1.2rem'
-    }}>{title}</h3>
+    return <h3 style={{ marginTop: '50px', marginBottom: '20px', borderBottom: '2px solid #000', paddingBottom: '10px', fontSize: '1.4rem', fontWeight: 'bold', color: '#000' }}>{title}</h3>
 }
 
-function Field({ label, name, value, onChange, type = "text", placeholder, required, fullWidth, ...props }: any) {
+function Field({ label, value, onChange, disabled, type = "text", ...props }: any) {
     return (
-        <div className={styles.formGroup} style={fullWidth ? { gridColumn: '1 / -1' } : {}}>
-            <label>{label}</label>
+        <div className={styles.formGroup}>
+            <label style={{ color: '#000', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>{label}</label>
             {type === 'textarea' ? (
-                <textarea className={styles.textarea} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} rows={4} required={required} {...props} />
+                <textarea value={value ?? ''} onChange={onChange} style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #000', color: '#000' }} rows={3} {...props} />
             ) : (
-                <input className={styles.input} type={type} name={name} value={value ?? ''} onChange={onChange} placeholder={placeholder} required={required} {...props} />
+                <input type={type} value={value ?? ''} onChange={onChange} disabled={disabled} style={{ width: '100%', padding: '12px', borderRadius: '12px', background: disabled ? '#f5f5f5' : '#fff', border: '1px solid #000', color: '#000' }} {...props} />
             )}
         </div>
     )
 }
 
-function Select({ label, name, value, onChange, options }: any) {
+function ProfilePhotoSection({ url, onUpload, status }: any) {
     return (
-        <div className={styles.formGroup}>
-            <label>{label}</label>
-            <select className={styles.select} name={name} value={value ?? ''} onChange={onChange}>
-                <option value="">Select...</option>
-                {options.map((o: string) => <option key={o} value={o}>{o}</option>)}
-            </select>
+        <div style={{ margin: '30px 0', padding: '25px', background: '#fdfdfd', border: '1px solid #000', borderRadius: '20px', display: 'flex', gap: '25px', alignItems: 'center' }}>
+            <div style={{ position: 'relative' }}>
+                <img key={url} src={fixUrl(url)} onError={(e: any) => e.target.src = '/default_avatar.png'} style={{ width: 110, height: 140, borderRadius: '15px', objectFit: 'cover', objectPosition: 'top center', border: '2px solid var(--primary)' }} />
+                <div style={{ position: 'absolute', bottom: -5, right: -5, background: 'var(--primary)', padding: '5px', borderRadius: '50%' }}><Camera size={14} /></div>
+            </div>
+            <div style={{ flex: 1 }}>
+                <label style={{ color: '#000', fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>Profile Picture</label>
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <button type="button" className="btn btn-primary" style={{ padding: '10px 20px' }}><Upload size={16} /> Select Photo</button>
+                    <input type="file" onChange={onUpload} accept="image/*" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
+                </div>
+                {status && <div style={{ marginTop: '10px', color: status.type === 'error' ? '#ef4444' : '#10b981', fontSize: '0.85rem', fontWeight: 'bold' }}>{status.text}</div>}
+            </div>
+        </div>
+    )
+}
+
+function GalleryUploadSection({ items, onUpload, onRemove, onPreview, status }: any) {
+    return (
+        <div style={{ marginBottom: '40px' }}>
+            <label style={{ color: '#000', fontWeight: 'bold', display: 'block', marginBottom: '15px' }}>Portfolio Gallery</label>
+            <div className="gallery-grid">
+                {items && items.map((url: string, i: number) => (
+                    <div key={i} className="gallery-item" onClick={() => onPreview(url)} style={{ cursor: 'pointer' }}>
+                        <img src={fixUrl(url)} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }} />
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onRemove(i); }} style={{ position: 'absolute', top: 5, right: 5, background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', zIndex: 10 }}><Trash2 size={12} /></button>
+                    </div>
+                ))}
+                <div className="gallery-add-item" style={{ position: 'relative' }}>
+                    <Upload size={24} color="#000" />
+                    <span style={{ fontSize: '0.8rem', color: '#000', marginTop: '5px' }}>Add</span>
+                    <input type="file" multiple onChange={onUpload} accept="image/*" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer', zIndex: 10 }} />
+                </div>
+            </div>
+            {status && <div style={{ marginTop: '10px', color: '#10b981', fontSize: '0.85rem', fontWeight: 'bold' }}>{status.text}</div>}
         </div>
     )
 }

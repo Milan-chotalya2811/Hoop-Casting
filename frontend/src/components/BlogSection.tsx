@@ -13,7 +13,7 @@ export default function BlogSection() {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                const { data } = await api.get('/blogs.php')
+                const { data } = await api.get(`/blogs.php?t=${Date.now()}`)
                 if (data && Array.isArray(data)) {
                     setBlogs(data.slice(0, 3))
                 }

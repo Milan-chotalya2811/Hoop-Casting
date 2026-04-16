@@ -23,6 +23,7 @@ if (
     $data->name = htmlspecialchars(strip_tags(trim($data->name)));
     $data->mobile = htmlspecialchars(strip_tags(trim($data->mobile)));
     $email = !empty($data->email) ? htmlspecialchars(strip_tags(trim($data->email))) : null;
+    $raw_password = trim($data->password); // Trim to avoid autofill adding spaces
 
     // Check Duplicate
     $checkQuery = "SELECT id FROM users WHERE mobile = :mobile OR email = :email LIMIT 1";
@@ -33,7 +34,7 @@ if (
 
     if ($stmt->rowCount() > 0) {
         http_response_code(400);
-        echo json_encode(["message" => "User already exists."]);
+        echo json_encode(["message" => "User already exists with this mobile or email."]);
         file_put_contents($logFile, " - User Exists Error\n", FILE_APPEND);
         exit();
     }
@@ -42,7 +43,7 @@ if (
     $query = "INSERT INTO users (name, mobile, email, password_hash, api_token) VALUES (:name, :mobile, :email, :password_hash, :api_token)";
     $stmt = $db->prepare($query);
 
-    $password_hash = password_hash($data->password, PASSWORD_BCRYPT);
+    $password_hash = password_hash($raw_password, PASSWORD_BCRYPT);
     $api_token = bin2hex(random_bytes(32));
 
     $stmt->bindParam(":name", $data->name);

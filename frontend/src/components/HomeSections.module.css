@@ -681,6 +681,11 @@
     filter: grayscale(100%);
 }
 
+.finalWordContent {
+    text-align: center;
+    padding: 0 1.5rem;
+}
+
 .dreamersContent {
     text-align: center;
     color: white;
@@ -732,15 +737,23 @@
 
 /* --- Final CTA --- */
 .ctaSection {
-    padding: 8rem 0;
+    padding: 4rem 0;
+    /* Changed to 0 side padding for mobile full-width */
     background-color: #ffffff;
-    /* White background */
     position: relative;
     display: flex;
+    flex-direction: column;
+    /* Stack on mobile */
     align-items: center;
     justify-content: center;
     overflow: hidden;
     border-top: 1px solid var(--border);
+}
+
+@media (min-width: 768px) {
+    .ctaSection {
+        padding: 8rem 0;
+    }
 }
 
 .ctaNoise {
@@ -755,6 +768,94 @@
     position: relative;
     z-index: 10;
     text-align: center;
+    padding: 0 1.5rem;
+    /* Add side padding back to text content only */
+}
+
+@media (min-width: 768px) {
+    .ctaContent {
+        text-align: left;
+        /* Left on desktop */
+    }
+}
+
+.ctaGridContainer {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .ctaGridContainer {
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+    }
+}
+
+.ctaSplineWrapper {
+    position: relative;
+    width: 100%;
+    /* Full width on mobile */
+    margin: 0;
+    height: 550px;
+    /* Increased height */
+    min-height: 550px;
+    background: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    z-index: 10;
+    display: none;
+    /* Hide on mobile to fix lag/scroll issues */
+    pointer-events: none;
+    touch-action: pan-y;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+    .ctaSplineWrapper {
+        display: flex;
+        /* Show on desktop */
+        justify-content: center;
+        align-items: center;
+        min-height: 480px;
+        height: 480px;
+        pointer-events: auto;
+    }
+}
+
+.ctaSplineZoomer {
+    width: 180%;
+    /* Even larger virtual area */
+    height: 180%;
+    flex-shrink: 0;
+    transform: scale(0.5);
+    /* Zoom out on mobile */
+    transform-origin: center;
+    pointer-events: inherit;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    will-change: transform;
+    /* Hardware acceleration */
+}
+
+@media (min-width: 768px) {
+    .ctaSplineWrapper {
+        width: 100%;
+        margin: 0;
+        min-height: 480px;
+        height: 480px;
+    }
+
+    .ctaSplineZoomer {
+        width: 200%;
+        height: 200%;
+        transform: scale(0.5);
+    }
 }
 
 .ctaHeadline {

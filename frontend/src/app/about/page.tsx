@@ -5,6 +5,9 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowRight, Check, Star, Video, Camera, Users, Target, Zap, Film, Music, Globe, Clapperboard, MonitorPlay } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
+
+
 
 // Animation Variants
 // Animation Variants
@@ -301,12 +304,13 @@ export default function About() {
 
             {/* --- Final Word --- */}
             <section className={styles.finalWordSection}>
-                <div className="container">
+                <div className={`container ${styles.finalWordGrid}`}>
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, x: -30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8 }}
                         viewport={{ once: true }}
+                        className={styles.finalWordContent}
                     >
                         <h2 className={styles.finalHeadline}>You don’t need to be famous to be cast.</h2>
                         <h3 className={styles.finalSubhead}>You need to be prepared, expressive, and authentic.</h3>
@@ -321,6 +325,23 @@ export default function About() {
                                 Apply. Get seen. Be ready.
                             </Link>
                         </div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 30 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8 }}
+                        viewport={{ once: true }}
+                        className={styles.finalWordImgWrapper}
+                        style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', justifyContent: 'center' }}
+                    >
+                        <img
+                            src="/hoop_vision_brand.png"
+                            alt="Hoop Casting"
+                            style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
+                            width={500}
+                            height={500}
+                        />
                     </motion.div>
                 </div>
             </section>

@@ -90,6 +90,8 @@ if ($method == 'GET') {
     $insert_vals = [':user_id'];
     $params[':user_id'] = $user['id'];
 
+    $array_fields = ['languages', 'skills', 'past_work', 'portfolio_links', 'gallery_urls', 'interested_in', 'social_links', 'custom_fields'];
+
     foreach ($fields as $field) {
         // Validate WhatsApp Number
         if ($field === 'whatsapp_number' && isset($data[$field]) && !empty($data[$field])) {
@@ -102,11 +104,19 @@ if ($method == 'GET') {
 
         if (isset($data[$field])) {
             $val = $data[$field];
-            if (is_array($val)) {
-                $val = json_encode($val);
-            }
-            if ($field === 'custom_fields' && is_array($val) || is_object($val)) {
-                $val = json_encode($val);
+            
+            // Handle Array Fields
+            if (in_array($field, $array_fields)) {
+                if (is_array($val)) {
+                    $val = json_encode($val);
+                } elseif (is_string($val) && (strpos($val, '[') === 0 || strpos($val, '{') === 0)) {
+                    // Already a JSON string, keep it as is
+                }
+            } else {
+                // Non-array field but passed as array? Take first item.
+                if (is_array($val)) {
+                    $val = !empty($val) ? reset($val) : '';
+                }
             }
 
             $insert_cols[] = $field;

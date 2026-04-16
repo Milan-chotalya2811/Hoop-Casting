@@ -17,7 +17,7 @@ export default function BlogManagement() {
     const fetchBlogs = async () => {
         setLoading(true)
         try {
-            const { data } = await api.get('/admin/blogs.php')
+            const { data } = await api.get(`/admin/blogs.php?t=${Date.now()}`)
             if (Array.isArray(data)) {
                 setBlogs(data)
             } else {

@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState } from 'react'
@@ -6,14 +7,13 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import styles from './Header.module.css'
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, UserCircle, Laptop } from 'lucide-react'
+import { fixUrl } from '@/lib/utils'
 
 const Header = () => {
     const { user, profile, talentProfile, signOut } = useAuth()
     const pathname = usePathname()
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-
 
     const isActive = (path: string) => pathname === path ? styles.navLinkActive : ''
 
@@ -38,7 +38,6 @@ const Header = () => {
                         </Link>
                     </div>
 
-                    {/* Desktop Nav */}
                     <nav className={styles.nav}>
                         <NavLinks />
                     </nav>
@@ -53,16 +52,16 @@ const Header = () => {
                                 <div className={styles.avatar}>
                                     {talentProfile?.profile_photo_url ? (
                                         <img
-                                            src={talentProfile.profile_photo_url}
+                                            src={fixUrl(talentProfile.profile_photo_url)}
                                             alt="User"
-                                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }}
+                                            onError={(e: any) => e.target.src = '/default_avatar.png'}
                                         />
                                     ) : (
                                         <UserCircle size={28} />
                                     )}
                                 </div>
 
-                                {/* Dropdown - Toggle via State */}
                                 {isDropdownOpen && (
                                     <div className={styles.dropdown} style={{ display: 'flex' }}>
                                         {['admin', 'super_admin'].includes(profile?.role) && (
@@ -89,7 +88,6 @@ const Header = () => {
                             </Link>
                         )}
 
-                        {/* Mobile Menu Toggle */}
                         <button className={styles.mobileMenuBtn} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                             {mobileMenuOpen ? <X /> : <Menu />}
                         </button>
@@ -97,7 +95,6 @@ const Header = () => {
                 </div>
             </header>
 
-            {/* Mobile Menu Overlay */}
             {mobileMenuOpen && (
                 <div className={styles.mobileMenu}>
                     <Link href="/" className={`${styles.navLink} ${isActive('/')}`} onClick={() => setMobileMenuOpen(false)}>Home</Link>
