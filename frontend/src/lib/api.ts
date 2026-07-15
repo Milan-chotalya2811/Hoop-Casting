@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Change this to your PHP backend URL
-const API_BASE_URL = 'https://hoopcasting.com/php_backend/api';
+// Use environment variable, fallback to live URL if not set
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hoopcasting.com/php_backend/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -25,6 +25,23 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle global 401 Unauthorized errors (e.g. user deleted)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        // Redirect to login only if we are not already there to prevent loops
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login';
+        }
+      }
+    }
     return Promise.reject(error);
   }
 );

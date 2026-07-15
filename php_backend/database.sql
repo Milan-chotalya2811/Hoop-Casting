@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS talent_profiles (
     
     -- Media (Paths stored in local uploads folder)
     profile_photo_url VARCHAR(255),
+    profile_picture LONGTEXT,
     gallery_urls TEXT, -- JSON array of file paths
     intro_video_url VARCHAR(255),
     social_links VARCHAR(255),

@@ -57,7 +57,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '20px' }}>
                         <div style={{ padding: '2px', background: 'var(--surface)', borderRadius: '50%', flexShrink: 0, width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                             <img 
-                                src={fixUrl(talentProfile?.profile_photo_url)} 
+                                src={talentProfile?.profile_picture || fixUrl(talentProfile?.profile_photo_url)} 
                                 alt="Profile" 
                                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', borderRadius: '50%' }} 
                                 onError={(e: any) => e.target.src = '/default_avatar.png'}
@@ -67,25 +67,25 @@ export default function Dashboard() {
                             <h2 style={{ fontSize: '1.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={profile?.name || user.email}>
                                 {profile?.name || user.email}
                             </h2>
-                            <p style={{ color: 'var(--text-muted)' }}>{profile?.role === 'admin' ? 'Administrator' : 'Talent'}</p>
+                            <p style={{ color: 'var(--text-muted)' }}>{['admin', 'super_admin'].includes(profile?.role?.toLowerCase()?.trim()) ? 'Administrator' : 'Talent'}</p>
                         </div>
                     </div>
 
                     <div style={{ marginBottom: '20px' }}>
                         <p className={styles.label}>Email</p>
-                        <p>{user.email}</p>
+                        <p>{user.email || <span style={{ color: 'var(--text-muted)' }}>Not provided</span>}</p>
                     </div>
                     {/* Mobile Field */}
                     <div>
                         <p className={styles.label}>Mobile</p>
-                        <p>{profile?.mobile}</p>
+                        <p>{profile?.mobile || <span style={{ color: 'var(--text-muted)' }}>Not provided</span>}</p>
                     </div>
 
                     <Link href="/change-password" className="btn btn-outline" style={{ marginTop: '20px', width: '100%' }}>
                         <Lock size={18} style={{ marginRight: '8px' }} /> Change Password
                     </Link>
 
-                    {['admin', 'super_admin'].includes(profile?.role) && (
+                    {['admin', 'super_admin'].includes(profile?.role?.toLowerCase()?.trim()) && (
                         <Link href="/admin" className="btn btn-outline" style={{ marginTop: '20px', width: '100%' }}>
                             <Shield size={18} style={{ marginRight: '8px' }} /> Go to Admin Panel
                         </Link>

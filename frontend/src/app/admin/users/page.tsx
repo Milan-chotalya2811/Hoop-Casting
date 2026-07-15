@@ -80,7 +80,7 @@ export default function UserManagement() {
     })
 
     // Access Control check (also handled in Layout but double safety)
-    if (adminProfile?.role !== 'admin' && adminProfile?.role !== 'super_admin') {
+    if (!['admin', 'super_admin'].includes(adminProfile?.role?.toLowerCase()?.trim())) {
         return <div style={{ padding: '2rem' }}>Only Admins can manage user credentials.</div>
     }
 
@@ -136,7 +136,7 @@ export default function UserManagement() {
                                         </td>
                                         <td>
                                             <span style={{
-                                                background: user.role === 'super_admin' ? '#7c3aed' : user.role === 'admin' ? '#2563eb' : '#374151',
+                                                background: user.role?.toLowerCase()?.trim() === 'super_admin' ? '#7c3aed' : user.role?.toLowerCase()?.trim() === 'admin' ? '#2563eb' : '#374151',
                                                 color: '#fff',
                                                 padding: '2px 8px',
                                                 borderRadius: '4px',

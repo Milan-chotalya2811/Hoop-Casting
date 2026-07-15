@@ -115,7 +115,7 @@ function TalentProfileContent() {
             <div className="profile-header-card">
                 <div className="profile-photo-container">
                     <img
-                        src={fixUrl(profile.profile_photo_url)}
+                        src={profile.profile_picture || fixUrl(profile.profile_photo_url)}
                         alt="Profile"
                         className="profile-photo-img"
                         onError={(e: any) => e.target.src = '/default_avatar.png'}

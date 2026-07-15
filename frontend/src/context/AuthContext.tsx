@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import api from '@/lib/api'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 interface User {
     id: any
@@ -70,9 +70,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
+    const pathname = usePathname()
+
     useEffect(() => {
-        fetchProfile()
-    }, [])
+        // If we already have a user, do a silent fetch in the background to verify session
+        // If we don't have a user but we have a token, do a full fetch with loading state
+        const token = localStorage.getItem('token')
+        if (token) {
+            fetchProfile()
+        }
+    }, [pathname])
+
+    // Real-time synchronization polling
+    useEffect(() => {
+        const token = localStorage.getItem('token')
+        if (!token) return
+
+        // Ping the server every 15 seconds (15000ms) to check if the user is still valid and update their state if it changed
+        const interval = setInterval(async () => {
+            // ONLY ping the server if the user is actually looking at the tab.
+            // This prevents thousands of idle background tabs from crashing the server!
+            if (document.visibilityState !== 'visible') return;
+
+            try {
+                // This silent request will trigger the global 401 interceptor in api.ts
+                // if the user is deleted from the database.
+                const { data } = await api.get('/me.php');
+                setUser(prev => {
+                    if (!prev) return data;
+                    // Update if critical fields like role or name changed
+                    if (prev.role !== data.role || prev.name !== data.name) {
+                        return { ...prev, ...data };
+                    }
+                    return prev;
+                });
+            } catch (err) {
+                // 401s are handled globally in api.ts, redirecting them instantly
+            }
+        }, 15000)
+
+        return () => clearInterval(interval)
+    }, [user]) // Re-run when user logs in/out
 
     const signOut = () => {
         localStorage.removeItem('token')

@@ -50,9 +50,9 @@ const Header = () => {
                                 style={{ position: 'relative' }}
                             >
                                 <div className={styles.avatar}>
-                                    {talentProfile?.profile_photo_url ? (
+                                    {talentProfile?.profile_picture || talentProfile?.profile_photo_url ? (
                                         <img
-                                            src={fixUrl(talentProfile.profile_photo_url)}
+                                            src={talentProfile.profile_picture || fixUrl(talentProfile.profile_photo_url)}
                                             alt="User"
                                             style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }}
                                             onError={(e: any) => e.target.src = '/default_avatar.png'}
@@ -64,7 +64,7 @@ const Header = () => {
 
                                 {isDropdownOpen && (
                                     <div className={styles.dropdown} style={{ display: 'flex' }}>
-                                        {['admin', 'super_admin'].includes(profile?.role) && (
+                                        {['admin', 'super_admin'].includes(profile?.role?.toLowerCase()?.trim()) && (
                                             <Link href="/admin" className={styles.dropdownItem}>
                                                 <Laptop size={16} style={{ marginRight: 8 }} /> Admin Panel
                                             </Link>
@@ -72,7 +72,7 @@ const Header = () => {
                                         <Link href="/dashboard" className={styles.dropdownItem}>
                                             <LayoutDashboard size={16} style={{ marginRight: 8 }} /> Dashboard
                                         </Link>
-                                        <Link href="/profile" className={styles.dropdownItem}>
+                                        <Link href={talentProfile ? "/profile" : "/profile/edit"} className={styles.dropdownItem}>
                                             <UserCircle size={16} style={{ marginRight: 8 }} /> Talent Profile
                                         </Link>
                                         <button onClick={signOut} className={styles.dropdownItem} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center' }}>

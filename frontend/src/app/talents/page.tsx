@@ -76,7 +76,7 @@ export default function TalentsPage() {
                         <Link href={`/talent?id=${p.id}`} key={p.id}>
                             <div className={styles.castCard} style={{ height: 'auto', aspectRatio: '1/1', width: '100%' }}>
                                 <img
-                                    src={fixUrl(p.profile_photo_url)}
+                                    src={p.profile_picture || fixUrl(p.profile_photo_url)}
                                     alt="Profile"
                                     className={styles.castImg}
                                 />

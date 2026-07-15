@@ -13,5 +13,8 @@
         "start": "npm start --workspace=frontend",
         "start:admin": "npm start --workspace=admin-panel -- -p 3001",
         "lint": "npm run lint --workspaces"
+    },
+    "dependencies": {
+        "axios": "^1.15.0"
     }
 }
